@@ -59,6 +59,15 @@ class Booking_model extends CI_Model {
         return $row['total_fare'] ? $row['total_fare'] : 0.00;
     }
 
+    public function get_total_driver_batta()
+    {
+        $this->db->select_sum('driver_batta');
+        $this->db->where('booking_status !=', 'cancelled');
+        $query = $this->db->get('bookings');
+        $row = $query->row_array();
+        return $row['driver_batta'] ? floatval($row['driver_batta']) : 0.00;
+    }
+
     public function update_booking($booking_id, $data)
     {
         $this->db->where('booking_id', $booking_id);

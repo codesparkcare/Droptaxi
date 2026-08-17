@@ -30,6 +30,11 @@
             </a>
         </li>
         <li>
+            <a href="<?php echo base_url('admin/customers'); ?>" class="<?= uri_string() == 'admin/customers' ? 'active' : '' ?>">
+                <i class="fa-solid fa-users"></i> Manage Customers
+            </a>
+        </li>
+        <li>
             <a href="<?php echo base_url('admin/enquiries'); ?>" class="<?= uri_string() == 'admin/enquiries' ? 'active' : '' ?>">
                 <i class="fa-solid fa-envelope"></i> Customer Enquiries
             </a>

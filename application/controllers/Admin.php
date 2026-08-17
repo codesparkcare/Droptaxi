@@ -13,6 +13,7 @@ class Admin extends CI_Controller {
 		$this->load->model('Setting_model');
 		$this->load->model('Enquiry_model');
 		$this->load->model('Coupon_model');
+		$this->load->model('Customer_model');
 	}
 
 	private function check_auth() {
@@ -57,12 +58,14 @@ class Admin extends CI_Controller {
 	public function index() {
 		$this->check_auth();
 
-		$data['total_bookings'] = $this->Booking_model->count_bookings();
-		$data['new_bookings']   = $this->Booking_model->count_bookings('new');
-		$data['total_revenue']  = $this->Booking_model->get_total_revenue();
-		$data['unread_enquiries'] = $this->Enquiry_model->count_unread_enquiries();
+		$data['total_bookings']     = $this->Booking_model->count_bookings();
+		$data['new_bookings']       = $this->Booking_model->count_bookings('new');
+		$data['total_revenue']      = $this->Booking_model->get_total_revenue();
+		$data['total_driver_batta'] = $this->Booking_model->get_total_driver_batta();
+		$data['unread_enquiries']   = $this->Enquiry_model->count_unread_enquiries();
 
-		$data['recent_bookings'] = $this->Booking_model->get_all_bookings(null, 8, 0);
+		$data['recent_bookings']    = $this->Booking_model->get_all_bookings(null, 8, 0);
+		$data['vehicles']           = $this->Vehicle_model->get_all_vehicles();
 
 		$this->load->view('admin/layout/header');
 		$this->load->view('admin/layout/sidebar');
@@ -98,7 +101,8 @@ class Admin extends CI_Controller {
 			$this->Booking_model->update_booking($booking_id, $update);
 			$this->session->set_flashdata('success', 'Booking updated successfully!');
 		}
-		redirect('admin/bookings');
+		$redirect = $this->input->post('redirect_to') ? $this->input->post('redirect_to') : 'admin/bookings';
+		redirect($redirect);
 	}
 
 	public function update_fare_details() {
@@ -123,7 +127,8 @@ class Admin extends CI_Controller {
 			));
 			$this->session->set_flashdata('success', 'Fare breakdown updated successfully!');
 		}
-		redirect('admin/bookings');
+		$redirect = $this->input->post('redirect_to') ? $this->input->post('redirect_to') : 'admin/bookings';
+		redirect($redirect);
 	}
 
 	public function vehicles() {
@@ -236,6 +241,7 @@ class Admin extends CI_Controller {
 			'discount_type'    => $this->input->post('discount_type'),
 			'discount_value'   => floatval($this->input->post('discount_value')),
 			'min_order_amount' => floatval($this->input->post('min_order_amount')),
+			'is_one_time'      => intval($this->input->post('is_one_time')),
 			'status'           => $this->input->post('status'),
 			'expiry_date'      => !empty($this->input->post('expiry_date')) ? $this->input->post('expiry_date') : null
 		);
@@ -257,5 +263,30 @@ class Admin extends CI_Controller {
 			$this->session->set_flashdata('success', 'Coupon code deleted successfully!');
 		}
 		redirect('admin/coupons');
+	}
+
+	public function customers() {
+		$this->check_auth();
+
+		$data['customers'] = $this->Customer_model->get_all_customers();
+		$data['total_customers'] = $this->Customer_model->count_customers();
+
+		$this->load->view('admin/layout/header');
+		$this->load->view('admin/layout/sidebar');
+		$this->load->view('admin/customers', $data);
+		$this->load->view('admin/layout/footer');
+	}
+
+	public function update_customer_status() {
+		$this->check_auth();
+
+		$customer_id = $this->input->post('customer_id');
+		$status      = $this->input->post('status');
+
+		if ($customer_id && in_array($status, array('active', 'blocked'))) {
+			$this->Customer_model->update_status($customer_id, $status);
+			$this->session->set_flashdata('success', 'Customer account status updated successfully!');
+		}
+		redirect('admin/customers');
 	}
 }

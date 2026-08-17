@@ -12,6 +12,7 @@ class Welcome extends CI_Controller {
 		$this->load->model('Setting_model');
 		$this->load->model('Enquiry_model');
 		$this->load->model('Coupon_model');
+		$this->load->model('Customer_model');
 	}
 
 	public function index()
@@ -48,27 +49,6 @@ class Welcome extends CI_Controller {
 			$effective_distance = $distance_km * 2; // Return trip total distance
 		}
 
-		$billable_km = max($effective_distance, $min_km);
-		$km_fare = $billable_km * $per_km;
-		$subtotal = $km_fare + $driver_batta + floatval($vehicle['base_fare']);
-
-		// Validate Coupon if supplied
-		$discount_amount = 0;
-		$coupon_applied  = false;
-		$coupon_message  = '';
-		if (!empty($coupon_code)) {
-			$coupon_res = $this->Coupon_model->validate_coupon($coupon_code, $subtotal);
-			if ($coupon_res['status']) {
-				$discount_amount = $coupon_res['discount_amount'];
-				$coupon_applied  = true;
-				$coupon_message  = $coupon_res['message'];
-			} else {
-				$coupon_message  = $coupon_res['message'];
-			}
-		}
-
-		$estimated_total = max(0, $subtotal - $discount_amount);
-
 		// Calculate estimated toll count and toll price
 		$toll_count = 0;
 		$estimated_toll_fee = 0;
@@ -93,6 +73,29 @@ class Welcome extends CI_Controller {
 				$estimated_toll_fee = round($one_way_tolls * $toll_rate_per_gate * $multiplier);
 			}
 		}
+
+		$billable_km = max($effective_distance, $min_km);
+		$km_fare = $billable_km * $per_km;
+		$subtotal = $km_fare + $driver_batta + $estimated_toll_fee + floatval($vehicle['base_fare']);
+
+		// Validate Coupon if supplied
+		$discount_amount = 0;
+		$coupon_applied  = false;
+		$coupon_message  = '';
+		if (!empty($coupon_code)) {
+			$passenger_phone = $this->input->post('passenger_phone');
+			$passenger_email = $this->input->post('passenger_email');
+			$coupon_res = $this->Coupon_model->validate_coupon($coupon_code, $subtotal, $passenger_phone, $passenger_email);
+			if ($coupon_res['status']) {
+				$discount_amount = $coupon_res['discount_amount'];
+				$coupon_applied  = true;
+				$coupon_message  = $coupon_res['message'];
+			} else {
+				$coupon_message  = $coupon_res['message'];
+			}
+		}
+
+		$estimated_total = max(0, $subtotal - $discount_amount);
 
 		echo json_encode(array(
 			'status'             => true,
@@ -155,11 +158,34 @@ class Welcome extends CI_Controller {
 		}
 
 		$billable_km = max($effective_distance, $min_km);
-		$subtotal = ($billable_km * $per_km) + $driver_batta + floatval($vehicle['base_fare']);
+		
+		$toll_count = 0;
+		$estimated_toll_fee = 0;
+		if ($distance_km > 40) {
+			$one_way_tolls = max(1, round($distance_km / 55));
+			$toll_rate_per_gate = 85;
+			if ($vehicle_type === 'suv') {
+				$toll_rate_per_gate = 105;
+			} else if ($vehicle_type === 'innova') {
+				$toll_rate_per_gate = 115;
+			} else if ($vehicle_type === 'tempo') {
+				$toll_rate_per_gate = 140;
+			}
+
+			if ($trip_type === 'oneway') {
+				$estimated_toll_fee = $one_way_tolls * $toll_rate_per_gate;
+			} else {
+				$is_same_day = (empty($return_date) || $return_date === $pickup_date);
+				$multiplier = $is_same_day ? 1.5 : 2.0;
+				$estimated_toll_fee = round($one_way_tolls * $toll_rate_per_gate * $multiplier);
+			}
+		}
+
+		$subtotal = ($billable_km * $per_km) + $driver_batta + $estimated_toll_fee + floatval($vehicle['base_fare']);
 
 		$discount_amount = 0;
 		if (!empty($coupon_code)) {
-			$coupon_res = $this->Coupon_model->validate_coupon($coupon_code, $subtotal);
+			$coupon_res = $this->Coupon_model->validate_coupon($coupon_code, $subtotal, $passenger_phone, $passenger_email);
 			if ($coupon_res['status']) {
 				$discount_amount = $coupon_res['discount_amount'];
 			}
@@ -167,6 +193,26 @@ class Welcome extends CI_Controller {
 
 		$estimated_total = max(0, $subtotal - $discount_amount);
 		$booking_id = $this->Booking_model->generate_booking_id();
+
+		// Attach or create customer profile
+		$customer_id = $this->session->userdata('customer_id');
+		if (!$customer_id) {
+			$customer = $this->Customer_model->get_customer_by_phone($passenger_phone);
+			if (!$customer) {
+				$this->Customer_model->create_or_update_otp($passenger_name, $passenger_phone, $passenger_email);
+				$customer = $this->Customer_model->get_customer_by_phone($passenger_phone);
+			}
+			if ($customer) {
+				$customer_id = $customer['id'];
+				$this->session->set_userdata(array(
+					'customer_logged_in' => true,
+					'customer_id'        => $customer['id'],
+					'customer_name'      => $customer['name'],
+					'customer_phone'     => $customer['phone'],
+					'customer_email'     => $customer['email']
+				));
+			}
+		}
 
 		$booking_data = array(
 			'booking_id'      => $booking_id,
@@ -177,10 +223,12 @@ class Welcome extends CI_Controller {
 			'pickup_time'     => $pickup_time ? $pickup_time : '09:00',
 			'return_date'     => !empty($return_date) ? $return_date : null,
 			'vehicle_id'      => $vehicle['id'],
+			'customer_id'     => $customer_id,
 			'vehicle_name'    => $vehicle['name'],
 			'distance_km'     => $distance_km,
 			'per_km_rate'     => $per_km,
 			'driver_batta'    => $driver_batta,
+			'toll_fee'        => $estimated_toll_fee,
 			'estimated_fare'  => round($estimated_total, 2),
 			'total_fare'      => round($estimated_total, 2),
 			'coupon_code'     => !empty($coupon_code) ? $coupon_code : null,
@@ -332,5 +380,50 @@ class Welcome extends CI_Controller {
 		$this->Enquiry_model->save_enquiry($data);
 		$this->session->set_flashdata('success', 'Thank you! Your enquiry has been submitted. We will contact you shortly.');
 		redirect('welcome#contact');
+	}
+
+	public function send_otp()
+	{
+		$name  = $this->input->post('name');
+		$phone = $this->input->post('phone');
+		$email = $this->input->post('email');
+
+		if (empty($phone)) {
+			echo json_encode(array('status' => false, 'message' => 'Please enter a valid phone number.'));
+			return;
+		}
+
+		$res = $this->Customer_model->create_or_update_otp($name, $phone, $email);
+		echo json_encode($res);
+	}
+
+	public function verify_otp()
+	{
+		$phone = $this->input->post('phone');
+		$otp   = $this->input->post('otp');
+
+		if (empty($phone) || empty($otp)) {
+			echo json_encode(array('status' => false, 'message' => 'Please enter both phone number and OTP code.'));
+			return;
+		}
+
+		$res = $this->Customer_model->verify_otp($phone, $otp);
+		if ($res['status']) {
+			$c = $res['customer'];
+			$this->session->set_userdata(array(
+				'customer_logged_in' => true,
+				'customer_id'        => $c['id'],
+				'customer_name'      => $c['name'],
+				'customer_phone'     => $c['phone'],
+				'customer_email'     => $c['email']
+			));
+		}
+		echo json_encode($res);
+	}
+
+	public function customer_logout()
+	{
+		$this->session->unset_userdata(array('customer_logged_in', 'customer_id', 'customer_name', 'customer_phone', 'customer_email'));
+		echo json_encode(array('status' => true, 'message' => 'Logged out successfully!'));
 	}
 }

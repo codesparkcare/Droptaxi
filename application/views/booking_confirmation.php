@@ -126,6 +126,22 @@
                                 <span class="text-secondary">Driver Batta:</span>
                                 <span class="fw-semibold text-dark">₹<?= number_format($booking['driver_batta'], 2) ?></span>
                             </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-secondary">Est. Toll Gates & Fee:</span>
+                                <span class="fw-semibold text-danger">₹<?= number_format($booking['toll_fee'], 2) ?></span>
+                            </div>
+                            <?php if(!empty($booking['permit_fee']) && floatval($booking['permit_fee']) > 0): ?>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-secondary">State Permit Fee:</span>
+                                <span class="fw-semibold text-dark">₹<?= number_format($booking['permit_fee'], 2) ?></span>
+                            </div>
+                            <?php endif; ?>
+                            <?php if(!empty($booking['discount_amount']) && floatval($booking['discount_amount']) > 0): ?>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-success fw-semibold"><i class="fa-solid fa-ticket me-1"></i>Coupon Discount:</span>
+                                <span class="fw-semibold text-success">- ₹<?= number_format($booking['discount_amount'], 2) ?></span>
+                            </div>
+                            <?php endif; ?>
                             <hr>
                             <div class="d-flex justify-content-between align-items-center fs-5">
                                 <span class="fw-bold text-dark">Total Estimated Fare:</span>

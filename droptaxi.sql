@@ -63,6 +63,7 @@ CREATE TABLE `bookings` (
   `pickup_time` time NOT NULL,
   `return_date` date DEFAULT NULL,
   `vehicle_id` int(11) DEFAULT NULL,
+  `customer_id` int(11) DEFAULT NULL,
   `vehicle_name` varchar(100) NOT NULL,
   `distance_km` decimal(10,2) DEFAULT 0.00,
   `per_km_rate` decimal(10,2) DEFAULT 0.00,
@@ -110,6 +111,7 @@ CREATE TABLE `coupons` (
   `discount_type` enum('flat','percent') NOT NULL DEFAULT 'flat',
   `discount_value` decimal(10,2) NOT NULL DEFAULT 0.00,
   `min_order_amount` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `is_one_time` tinyint(1) NOT NULL DEFAULT 0,
   `status` enum('active','inactive') NOT NULL DEFAULT 'active',
   `expiry_date` date DEFAULT NULL,
   `created_at` datetime DEFAULT current_timestamp(),
@@ -124,7 +126,7 @@ CREATE TABLE `coupons` (
 
 LOCK TABLES `coupons` WRITE;
 /*!40000 ALTER TABLE `coupons` DISABLE KEYS */;
-INSERT INTO `coupons` VALUES (1,'SAVE100','flat',100.00,1000.00,'active',NULL,'2026-08-17 10:46:07'),(2,'WELCOME10','percent',10.00,500.00,'active',NULL,'2026-08-17 10:46:07');
+INSERT INTO `coupons` VALUES (1,'SAVE100','flat',100.00,1000.00,0,'active',NULL,'2026-08-17 10:46:07'),(2,'WELCOME10','percent',10.00,500.00,1,'active',NULL,'2026-08-17 10:46:07');
 /*!40000 ALTER TABLE `coupons` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -222,6 +224,26 @@ LOCK TABLES `vehicles` WRITE;
 INSERT INTO `vehicles` VALUES (1,'Sedan (Dzire / Etios)','sedan',4,2,130,250,14.00,13.00,300.00,400.00,0.00,NULL,'Comfortable AC Sedan ideal for up to 4 passengers with light luggage.','active','2026-08-16 22:15:13'),(2,'SUV / Ertiga','suv',6,4,130,250,19.00,17.00,400.00,500.00,0.00,NULL,'Spacious AC SUV suitable for family trips with ample legroom.','active','2026-08-16 22:15:13'),(3,'Innova Crysta','innova',7,5,130,250,22.00,20.00,400.00,500.00,0.00,NULL,'Premium executive luxury MUV for comfortable long outstation journeys.','active','2026-08-16 22:15:13'),(4,'Tempo Traveller','tempo',12,10,150,300,28.00,25.00,600.00,700.00,0.00,NULL,'Large group luxury van equipped with AC and spacious seats.','active','2026-08-16 22:15:13');
 /*!40000 ALTER TABLE `vehicles` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `customers`
+--
+
+DROP TABLE IF EXISTS `customers`;
+CREATE TABLE `customers` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL,
+  `phone` varchar(20) NOT NULL,
+  `email` varchar(150) DEFAULT NULL,
+  `otp_code` varchar(10) DEFAULT NULL,
+  `otp_expiry` datetime DEFAULT NULL,
+  `is_verified` tinyint(1) NOT NULL DEFAULT 0,
+  `status` enum('active','blocked') NOT NULL DEFAULT 'active',
+  `created_at` datetime DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `phone` (`phone`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;

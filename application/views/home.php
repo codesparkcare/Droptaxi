@@ -372,7 +372,28 @@
                     <li class="nav-item"><a class="nav-link" href="#why-us">Why Choose Us</a></li>
                     <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
                 </ul>
-                <div class="d-flex align-items-center gap-2">
+                <div class="d-flex align-items-center gap-2" id="navbar-auth-container">
+                    <?php $is_cust_logged = $this->session->userdata('customer_logged_in'); ?>
+                    <?php if($is_cust_logged): ?>
+                        <div class="dropdown">
+                            <button class="btn btn-outline-warning rounded-pill px-3 py-2 dropdown-toggle font-weight-bold" type="button" data-bs-toggle="dropdown">
+                                <i class="fa-solid fa-user-circle me-1"></i> <?= html_escape($this->session->userdata('customer_name')) ?>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
+                                <li class="px-3 py-2 extra-small text-muted border-bottom">
+                                    <div><strong>Phone:</strong> <?= html_escape($this->session->userdata('customer_phone')) ?></div>
+                                    <?php if($this->session->userdata('customer_email')): ?>
+                                        <div><strong>Email:</strong> <?= html_escape($this->session->userdata('customer_email')) ?></div>
+                                    <?php endif; ?>
+                                </li>
+                                <li><a class="dropdown-item py-2 text-danger" href="javascript:void(0)" onclick="customerLogout()"><i class="fa-solid fa-arrow-right-from-bracket me-2"></i> Sign Out</a></li>
+                            </ul>
+                        </div>
+                    <?php else: ?>
+                        <button type="button" class="btn btn-outline-warning rounded-pill px-3 py-2 font-weight-bold" onclick="openCustomerAuthModal()">
+                            <i class="fa-solid fa-user-lock me-1"></i> Customer Sign In / OTP
+                        </button>
+                    <?php endif; ?>
                     <a href="https://wa.me/<?= $settings['whatsapp_number'] ?? '919876543210' ?>" target="_blank" class="btn btn-outline-dark rounded-circle p-2" title="WhatsApp Us">
                         <i class="fa-brands fa-whatsapp fs-5 text-success"></i>
                     </a>
@@ -478,36 +499,72 @@
                             <!-- Vehicle Selection Grid -->
                             <label class="form-label fw-semibold text-secondary small mb-2">Select Vehicle Type</label>
                             <div class="row g-2 mb-3">
+                                <?php if(!empty($vehicles)): foreach($vehicles as $idx => $v): ?>
                                 <div class="col-6 col-md-3">
-                                    <div class="vehicle-select-card selected" id="card-sedan" onclick="selectVehicle('sedan')">
+                                    <div class="vehicle-select-card <?= $idx === 0 ? 'selected' : '' ?>" 
+                                         id="card-<?= html_escape($v['type_key']) ?>" 
+                                         onclick="selectVehicle('<?= html_escape($v['type_key']) ?>')"
+                                         data-oneway="<?= floatval($v['per_km_oneway']) ?>"
+                                         data-roundtrip="<?= floatval($v['per_km_roundtrip']) ?>"
+                                         data-min-oneway="<?= intval($v['min_km_oneway']) ?>"
+                                         data-min-roundtrip="<?= intval($v['min_km_roundtrip']) ?>">
+                                        <?php 
+                                            if($v['type_key']=='sedan') echo '<i class="fa-solid fa-car"></i>';
+                                            else if($v['type_key']=='suv') echo '<i class="fa-solid fa-truck-monster"></i>';
+                                            else if($v['type_key']=='innova') echo '<i class="fa-solid fa-van-shuttle"></i>';
+                                            else echo '<i class="fa-solid fa-bus"></i>';
+                                        ?>
+                                        <div class="fw-bold mt-1 small"><?= html_escape($v['name']) ?></div>
+                                        <div class="text-muted extra-small rate-text">₹<?= number_format($v['per_km_oneway'], 0) ?> / km</div>
+                                        <div class="extra-small text-secondary min-km-text" style="font-size: 0.72rem;"><i class="fa-solid fa-gauge-high me-1"></i>Min <span class="min-val"><?= $v['min_km_oneway'] ?></span> KM</div>
+                                    </div>
+                                </div>
+                                <?php endforeach; else: ?>
+                                <div class="col-6 col-md-3">
+                                    <div class="vehicle-select-card selected" id="card-sedan" onclick="selectVehicle('sedan')" data-oneway="14" data-roundtrip="13" data-min-oneway="130" data-min-roundtrip="250">
                                         <i class="fa-solid fa-car"></i>
                                         <div class="fw-bold mt-1 small">Sedan</div>
-                                        <div class="text-muted extra-small">₹14 / km</div>
+                                        <div class="text-muted extra-small rate-text">₹14 / km</div>
+                                        <div class="extra-small text-secondary min-km-text" style="font-size: 0.72rem;"><i class="fa-solid fa-gauge-high me-1"></i>Min <span class="min-val">130</span> KM</div>
                                     </div>
                                 </div>
                                 <div class="col-6 col-md-3">
-                                    <div class="vehicle-select-card" id="card-suv" onclick="selectVehicle('suv')">
+                                    <div class="vehicle-select-card" id="card-suv" onclick="selectVehicle('suv')" data-oneway="19" data-roundtrip="17" data-min-oneway="130" data-min-roundtrip="250">
                                         <i class="fa-solid fa-truck-monster"></i>
                                         <div class="fw-bold mt-1 small">SUV</div>
-                                        <div class="text-muted extra-small">₹19 / km</div>
+                                        <div class="text-muted extra-small rate-text">₹19 / km</div>
+                                        <div class="extra-small text-secondary min-km-text" style="font-size: 0.72rem;"><i class="fa-solid fa-gauge-high me-1"></i>Min <span class="min-val">130</span> KM</div>
                                     </div>
                                 </div>
                                 <div class="col-6 col-md-3">
-                                    <div class="vehicle-select-card" id="card-innova" onclick="selectVehicle('innova')">
+                                    <div class="vehicle-select-card" id="card-innova" onclick="selectVehicle('innova')" data-oneway="22" data-roundtrip="20" data-min-oneway="130" data-min-roundtrip="250">
                                         <i class="fa-solid fa-van-shuttle"></i>
                                         <div class="fw-bold mt-1 small">Innova</div>
-                                        <div class="text-muted extra-small">₹22 / km</div>
+                                        <div class="text-muted extra-small rate-text">₹22 / km</div>
+                                        <div class="extra-small text-secondary min-km-text" style="font-size: 0.72rem;"><i class="fa-solid fa-gauge-high me-1"></i>Min <span class="min-val">130</span> KM</div>
                                     </div>
                                 </div>
                                 <div class="col-6 col-md-3">
-                                    <div class="vehicle-select-card" id="card-tempo" onclick="selectVehicle('tempo')">
+                                    <div class="vehicle-select-card" id="card-tempo" onclick="selectVehicle('tempo')" data-oneway="28" data-roundtrip="25" data-min-oneway="150" data-min-roundtrip="300">
                                         <i class="fa-solid fa-bus"></i>
                                         <div class="fw-bold mt-1 small">Tempo</div>
-                                        <div class="text-muted extra-small">₹28 / km</div>
+                                        <div class="text-muted extra-small rate-text">₹28 / km</div>
+                                        <div class="extra-small text-secondary min-km-text" style="font-size: 0.72rem;"><i class="fa-solid fa-gauge-high me-1"></i>Min <span class="min-val">150</span> KM</div>
                                     </div>
                                 </div>
+                                <?php endif; ?>
                             </div>
                             <input type="hidden" name="vehicle_type" id="vehicle_type" value="sedan">
+
+                            <!-- Coupon Code Input Widget -->
+                            <div class="mb-3">
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="fa-solid fa-ticket text-warning"></i></span>
+                                    <input type="text" class="form-control text-uppercase font-monospace" name="coupon_code" id="coupon_code" placeholder="Have a coupon code? (e.g. SAVE100)" onchange="calculateGoogleDistance()">
+                                    <button class="btn btn-outline-dark fw-bold" type="button" onclick="calculateGoogleDistance()">Apply</button>
+                                </div>
+                                <div id="coupon-alert-msg" class="extra-small mt-1 fw-bold d-none"></div>
+                            </div>
 
                             <!-- Live Fare Estimate Box -->
                             <div class="fare-estimate-box mb-3">
@@ -532,35 +589,40 @@
                                     <span class="fw-extrabold fs-6 text-dark">Estimated Total:</span>
                                     <span class="fw-extrabold fs-4 text-dark" id="disp-total-fare">₹2,400</span>
                                 </div>
-                                <div class="extra-small text-muted text-end mt-1">* Toll, State Permit & Parking extra if applicable</div>
+                                <div class="extra-small text-muted text-end mt-1">* Includes Est. Toll Fee. State Permit & Parking extra if applicable</div>
                             </div>
 
-                            <!-- Coupon Code Input Widget -->
-                            <div class="mb-3">
-                                <div class="input-group">
-                                    <span class="input-group-text bg-light"><i class="fa-solid fa-ticket text-warning"></i></span>
-                                    <input type="text" class="form-control text-uppercase font-monospace" name="coupon_code" id="coupon_code" placeholder="Have a coupon code? (e.g. SAVE100)" onchange="calculateGoogleDistance()">
-                                    <button class="btn btn-outline-dark fw-bold" type="button" onclick="calculateGoogleDistance()">Apply</button>
+                            <!-- Passenger Details Container (Shown when logged in) -->
+                            <div id="passenger-details-box" class="<?= $is_cust_logged ? '' : 'd-none' ?>">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <label class="form-label fw-semibold text-secondary small mb-0">Passenger Details</label>
+                                    <span class="badge bg-success-subtle text-success border border-success extra-small"><i class="fa-solid fa-lock me-1"></i>Verified Profile (Non-editable)</span>
                                 </div>
-                                <div id="coupon-alert-msg" class="extra-small mt-1 fw-bold d-none"></div>
+                                <div class="row g-2 mb-3">
+                                    <div class="col-md-6">
+                                        <input type="text" class="form-control bg-light text-muted border-secondary-subtle" name="passenger_name" id="passenger_name" placeholder="Your Name *" value="<?= html_escape($this->session->userdata('customer_name') ?? '') ?>" readonly required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="tel" class="form-control bg-light text-muted border-secondary-subtle" name="passenger_phone" id="passenger_phone" placeholder="Phone Number *" value="<?= html_escape($this->session->userdata('customer_phone') ?? '') ?>" readonly required>
+                                    </div>
+                                    <div class="col-md-12 mt-2">
+                                        <input type="email" class="form-control bg-light text-muted border-secondary-subtle" name="passenger_email" id="passenger_email" placeholder="Email Address (for confirmation receipt)" value="<?= html_escape($this->session->userdata('customer_email') ?? '') ?>" readonly>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn btn-brand-yellow w-100 py-3 text-uppercase font-weight-bold fs-6">
+                                    <i class="fa-solid fa-taxi me-2"></i> Confirm Booking Now
+                                </button>
                             </div>
 
-                            <!-- Passenger Details -->
-                            <div class="row g-2 mb-3">
-                                <div class="col-md-6">
-                                    <input type="text" class="form-control" name="passenger_name" placeholder="Your Name *" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <input type="tel" class="form-control" name="passenger_phone" placeholder="Phone Number *" required>
-                                </div>
-                                <div class="col-md-12 mt-2">
-                                    <input type="email" class="form-control" name="passenger_email" placeholder="Email Address (for confirmation receipt)">
-                                </div>
+                            <!-- Sign In Required Box (Shown when NOT logged in) -->
+                            <div id="signin-required-box" class="card bg-warning-subtle border-warning rounded-4 p-3 mb-3 text-center <?= $is_cust_logged ? 'd-none' : '' ?>">
+                                <div class="fw-bold text-dark mb-1 fs-6"><i class="fa-solid fa-shield-halved text-warning me-1"></i> Customer Verification Required</div>
+                                <p class="small text-secondary mb-3">Please sign in with your Phone OTP to verify passenger details and confirm your ride.</p>
+                                <button type="button" class="btn btn-warning w-100 py-3 font-weight-bold text-dark text-uppercase shadow-sm fs-6" onclick="openCustomerAuthModal()">
+                                    <i class="fa-solid fa-mobile-screen-button me-2"></i> Sign In / Phone OTP to Book
+                                </button>
                             </div>
-
-                            <button type="submit" class="btn btn-brand-yellow w-100 py-3 text-uppercase font-weight-bold fs-6">
-                                <i class="fa-solid fa-taxi me-2"></i> Confirm Booking Now
-                            </button>
                         </form>
                     </div>
                 </div>
@@ -597,17 +659,26 @@
                         <h4 class="fw-bold text-dark"><?= html_escape($v['name']) ?></h4>
                         <p class="small text-muted mb-3"><?= html_escape($v['description']) ?></p>
 
-                        <div class="d-flex align-items-baseline gap-1 mb-3">
-                            <span class="fs-2 fw-extrabold text-dark">₹<?= number_format($v['per_km_oneway'], 0) ?></span>
-                            <span class="text-muted fw-semibold">/ km (One Way)</span>
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <div class="p-2 bg-light rounded-3 border text-center">
+                                    <div class="extra-small text-muted fw-bold text-uppercase" style="font-size: 0.68rem;">One Way</div>
+                                    <div class="fs-4 fw-extrabold text-dark">₹<?= number_format($v['per_km_oneway'], 0) ?><span class="fs-6 fw-normal text-muted">/km</span></div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="p-2 bg-success-subtle rounded-3 border border-success-subtle text-center">
+                                    <div class="extra-small text-success fw-bold text-uppercase" style="font-size: 0.68rem;">Round Trip</div>
+                                    <div class="fs-4 fw-extrabold text-success">₹<?= number_format($v['per_km_roundtrip'], 0) ?><span class="fs-6 fw-normal text-muted">/km</span></div>
+                                </div>
+                            </div>
                         </div>
 
                         <ul class="list-unstyled small mb-4">
-                            <li class="py-1"><i class="fa-solid fa-check text-success me-2"></i> Round Trip Rate: <strong>₹<?= $v['per_km_roundtrip'] ?>/km</strong></li>
-                            <li class="py-1"><i class="fa-solid fa-check text-success me-2"></i> Capacity: <strong><?= $v['capacity'] ?> Passengers</strong></li>
-                            <li class="py-1"><i class="fa-solid fa-check text-success me-2"></i> Driver Batta: <strong>₹<?= $v['driver_batta_oneway'] ?>/day</strong></li>
-                            <li class="py-1"><i class="fa-solid fa-check text-success me-2"></i> Min Coverage: <strong><?= $v['min_km_oneway'] ?> KM</strong></li>
-                            <li class="py-1"><i class="fa-solid fa-check text-success me-2"></i> AC & Music System</li>
+                            <li class="py-1"><i class="fa-solid fa-check text-success me-2"></i> Passenger Capacity: <strong><?= $v['capacity'] ?> Seater</strong></li>
+                            <li class="py-1"><i class="fa-solid fa-check text-success me-2"></i> Min KM: <strong><?= $v['min_km_oneway'] ?> KM (1-Way) | <?= $v['min_km_roundtrip'] ?> KM (Round)</strong></li>
+                            <li class="py-1"><i class="fa-solid fa-check text-success me-2"></i> Driver Batta: <strong>₹<?= number_format($v['driver_batta_oneway'], 0) ?> (1-Way) | ₹<?= number_format($v['driver_batta_roundtrip'], 0) ?> (Round)</strong></li>
+                            <li class="py-1"><i class="fa-solid fa-check text-success me-2"></i> Clean AC Cabs & Fasttag Equipped</li>
                         </ul>
 
                         <a href="#booking-section" onclick="selectVehicle('<?= $v['type_key'] ?>')" class="btn btn-outline-dark w-100 rounded-pill font-weight-bold">
@@ -786,6 +857,57 @@
             </div>
         </div>
     </footer>
+
+    <!-- Customer Phone OTP Modal -->
+    <div class="modal fade" id="customerAuthModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header bg-dark text-white border-0 py-3">
+                    <h5 class="modal-title fw-bold"><i class="fa-solid fa-shield-halved text-warning me-2"></i>Customer Sign In / Phone OTP</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <!-- Step 1: Send OTP -->
+                    <div id="otp-step-1">
+                        <p class="text-secondary small mb-3">Sign in or register with your Name, Phone Number, and Email to verify your booking.</p>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Your Name *</label>
+                            <input type="text" class="form-control" id="modal_cust_name" placeholder="Enter Full Name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Phone Number *</label>
+                            <input type="tel" class="form-control" id="modal_cust_phone" placeholder="10-digit mobile number" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Email Address (Optional)</label>
+                            <input type="email" class="form-control" id="modal_cust_email" placeholder="email@domain.com">
+                        </div>
+                        <button type="button" class="btn btn-warning w-100 py-2 fw-bold text-dark" onclick="sendCustomerOtp()">
+                            <i class="fa-solid fa-paper-plane me-1"></i> Send OTP Verification Code
+                        </button>
+                    </div>
+
+                    <!-- Step 2: Verify OTP Code -->
+                    <div id="otp-step-2" class="d-none">
+                        <div class="alert alert-info border-0 rounded-3 small mb-3" id="otp-demo-notice">
+                            <i class="fa-solid fa-bell me-1"></i> Demo OTP sent to <strong id="otp_target_phone"></strong>. Code: <strong id="otp_demo_code" class="fs-5 text-dark font-monospace">1234</strong>
+                        </div>
+                        <p class="text-secondary small mb-3">Please enter the 4-digit verification code sent to your phone number.</p>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Enter 4-Digit OTP Code *</label>
+                            <input type="text" class="form-control text-center font-monospace fs-4 fw-bold tracking-wider" id="modal_otp_code" placeholder="----" maxlength="4" required>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-light w-50 py-2" onclick="showOtpStep1()">&larr; Back</button>
+                            <button type="button" class="btn btn-success w-50 py-2 fw-bold" onclick="verifyCustomerOtp()">Verify & Sign In</button>
+                        </div>
+                    </div>
+
+                    <div id="auth-alert-msg" class="alert d-none mt-3 mb-0 small"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Floating Sticky Action Buttons -->
     <a href="tel:<?= $settings['contact_phone'] ?? '+919876543210' ?>" class="floating-action-btn float-call" title="Call Us Now">
@@ -979,6 +1101,27 @@
             });
         }
 
+        function updateVehicleCardRates(type) {
+            var cards = document.querySelectorAll('.vehicle-select-card');
+            cards.forEach(function(card) {
+                var rateTextEl = card.querySelector('.rate-text') || card.querySelector('.text-muted');
+                if (rateTextEl) {
+                    var rate = (type === 'roundtrip') ? card.getAttribute('data-roundtrip') : card.getAttribute('data-oneway');
+                    if (rate) {
+                        rateTextEl.innerHTML = '<strong>₹' + parseFloat(rate) + '</strong> / km';
+                    }
+                }
+
+                var minValEl = card.querySelector('.min-val');
+                if (minValEl) {
+                    var minKm = (type === 'roundtrip') ? card.getAttribute('data-min-roundtrip') : card.getAttribute('data-min-oneway');
+                    if (minKm) {
+                        minValEl.innerText = minKm;
+                    }
+                }
+            });
+        }
+
         function setTripType(type) {
             currentTripType = type;
             document.getElementById('trip_type').value = type;
@@ -996,6 +1139,7 @@
                 btnOneway.classList.remove('active');
                 retDateCont.classList.remove('d-none');
             }
+            updateVehicleCardRates(type);
             calculateGoogleDistance();
         }
 
@@ -1061,6 +1205,211 @@
                 alert('Network error. Please try again.');
             });
         });
+
+        function openCustomerAuthModal() {
+            saveDraftBookingForm();
+            var pName = document.getElementById('passenger_name') ? document.getElementById('passenger_name').value : '';
+            var pPhone = document.getElementById('passenger_phone') ? document.getElementById('passenger_phone').value : '';
+            var pEmail = document.getElementById('passenger_email') ? document.getElementById('passenger_email').value : '';
+
+            if (pName) document.getElementById('modal_cust_name').value = pName;
+            if (pPhone) document.getElementById('modal_cust_phone').value = pPhone;
+            if (pEmail) document.getElementById('modal_cust_email').value = pEmail;
+
+            var modal = new bootstrap.Modal(document.getElementById('customerAuthModal'));
+            modal.show();
+        }
+
+        function showOtpStep1() {
+            document.getElementById('otp-step-1').classList.remove('d-none');
+            document.getElementById('otp-step-2').classList.add('d-none');
+            document.getElementById('auth-alert-msg').classList.add('d-none');
+        }
+
+        function sendCustomerOtp() {
+            saveDraftBookingForm();
+            var name = document.getElementById('modal_cust_name').value.trim();
+            var phone = document.getElementById('modal_cust_phone').value.trim();
+            var email = document.getElementById('modal_cust_email').value.trim();
+            var alertEl = document.getElementById('auth-alert-msg');
+
+            if (!phone) {
+                alertEl.className = 'alert alert-danger mt-3 mb-0 small';
+                alertEl.innerText = 'Please enter a valid phone number.';
+                alertEl.classList.remove('d-none');
+                return;
+            }
+
+            var formData = new FormData();
+            formData.append('name', name);
+            formData.append('phone', phone);
+            formData.append('email', email);
+
+            fetch('<?= base_url("welcome/send_otp") ?>', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status) {
+                    document.getElementById('otp_target_phone').innerText = phone;
+                    document.getElementById('otp_demo_code').innerText = data.otp;
+                    document.getElementById('otp-step-1').classList.add('d-none');
+                    document.getElementById('otp-step-2').classList.remove('d-none');
+                    alertEl.classList.add('d-none');
+                } else {
+                    alertEl.className = 'alert alert-danger mt-3 mb-0 small';
+                    alertEl.innerText = data.message || 'Error sending OTP.';
+                    alertEl.classList.remove('d-none');
+                }
+            });
+        }
+
+        function verifyCustomerOtp() {
+            var phone = document.getElementById('modal_cust_phone').value.trim();
+            var otp = document.getElementById('modal_otp_code').value.trim();
+            var alertEl = document.getElementById('auth-alert-msg');
+
+            if (!otp) {
+                alertEl.className = 'alert alert-danger mt-3 mb-0 small';
+                alertEl.innerText = 'Please enter the 4-digit OTP code.';
+                alertEl.classList.remove('d-none');
+                return;
+            }
+
+            var formData = new FormData();
+            formData.append('phone', phone);
+            formData.append('otp', otp);
+
+            fetch('<?= base_url("welcome/verify_otp") ?>', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status && data.customer) {
+                    alertEl.className = 'alert alert-success mt-3 mb-0 small';
+                    alertEl.innerText = 'Phone verified successfully!';
+                    alertEl.classList.remove('d-none');
+
+                    var cust = data.customer;
+
+                    // Fill passenger fields
+                    var pName = document.getElementById('passenger_name');
+                    var pPhone = document.getElementById('passenger_phone');
+                    var pEmail = document.getElementById('passenger_email');
+
+                    if (pName) { pName.value = cust.name; pName.readOnly = true; }
+                    if (pPhone) { pPhone.value = cust.phone; pPhone.readOnly = true; }
+                    if (pEmail) { pEmail.value = cust.email || ''; pEmail.readOnly = true; }
+
+                    // Toggle booking form boxes dynamically without page reload!
+                    var signinBox = document.getElementById('signin-required-box');
+                    var detailsBox = document.getElementById('passenger-details-box');
+                    if (signinBox) signinBox.classList.add('d-none');
+                    if (detailsBox) detailsBox.classList.remove('d-none');
+
+                    // Update top navbar dropdown dynamically
+                    var navAuth = document.getElementById('navbar-auth-container');
+                    if (navAuth) {
+                        navAuth.innerHTML = `
+                            <div class="dropdown">
+                                <button class="btn btn-outline-warning rounded-pill px-3 py-2 dropdown-toggle font-weight-bold" type="button" data-bs-toggle="dropdown">
+                                    <i class="fa-solid fa-user-circle me-1"></i> ${escapeHtml(cust.name)}
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
+                                    <li class="px-3 py-2 extra-small text-muted border-bottom">
+                                        <div><strong>Phone:</strong> ${escapeHtml(cust.phone)}</div>
+                                        ${cust.email ? `<div><strong>Email:</strong> ${escapeHtml(cust.email)}</div>` : ''}
+                                    </li>
+                                    <li><a class="dropdown-item py-2 text-danger" href="javascript:void(0)" onclick="customerLogout()"><i class="fa-solid fa-arrow-right-from-bracket me-2"></i> Sign Out</a></li>
+                                </ul>
+                            </div>
+                            <a href="https://wa.me/<?= $settings['whatsapp_number'] ?? '919876543210' ?>" target="_blank" class="btn btn-outline-dark rounded-circle p-2" title="WhatsApp Us">
+                                <i class="fa-brands fa-whatsapp fs-5 text-success"></i>
+                            </a>
+                            <a href="tel:<?= $settings['contact_phone'] ?? '+919876543210' ?>" class="btn btn-brand-yellow">
+                                <i class="fa-solid fa-phone me-2"></i>Call Now
+                            </a>
+                        `;
+                    }
+
+                    // Restore draft booking form selections
+                    restoreDraftBookingForm();
+
+                    // Hide auth modal after short delay
+                    setTimeout(function() {
+                        var modalEl = document.getElementById('customerAuthModal');
+                        var modal = bootstrap.Modal.getInstance(modalEl);
+                        if (modal) modal.hide();
+                    }, 600);
+                } else {
+                    alertEl.className = 'alert alert-danger mt-3 mb-0 small';
+                    alertEl.innerText = data.message || 'OTP Verification failed.';
+                    alertEl.classList.remove('d-none');
+                }
+            });
+        }
+
+        function customerLogout() {
+            sessionStorage.removeItem('droptaxi_draft_booking');
+            fetch('<?= base_url("welcome/customer_logout") ?>')
+            .then(res => res.json())
+            .then(data => {
+                window.location.reload();
+            });
+        }
+
+        function saveDraftBookingForm() {
+            var draft = {
+                trip_type: document.getElementById('trip_type') ? document.getElementById('trip_type').value : '',
+                pickup_location: document.getElementById('pickup_location') ? document.getElementById('pickup_location').value : '',
+                drop_location: document.getElementById('drop_location') ? document.getElementById('drop_location').value : '',
+                pickup_date: document.getElementById('pickup_date') ? document.getElementById('pickup_date').value : '',
+                pickup_time: document.getElementById('pickup_time') ? document.getElementById('pickup_time').value : '',
+                return_date: document.getElementById('return_date') ? document.getElementById('return_date').value : '',
+                vehicle_type: document.getElementById('vehicle_type') ? document.getElementById('vehicle_type').value : '',
+                coupon_code: document.getElementById('coupon_code') ? document.getElementById('coupon_code').value : '',
+                distance_km: document.getElementById('distance_km') ? document.getElementById('distance_km').value : ''
+            };
+            sessionStorage.setItem('droptaxi_draft_booking', JSON.stringify(draft));
+        }
+
+        function restoreDraftBookingForm() {
+            var saved = sessionStorage.getItem('droptaxi_draft_booking');
+            if (!saved) return;
+            try {
+                var draft = JSON.parse(saved);
+                if (draft.trip_type && typeof setTripType === 'function') setTripType(draft.trip_type);
+                if (draft.pickup_location && document.getElementById('pickup_location')) document.getElementById('pickup_location').value = draft.pickup_location;
+                if (draft.drop_location && document.getElementById('drop_location')) document.getElementById('drop_location').value = draft.drop_location;
+                if (draft.pickup_date && document.getElementById('pickup_date')) document.getElementById('pickup_date').value = draft.pickup_date;
+                if (draft.pickup_time && document.getElementById('pickup_time')) document.getElementById('pickup_time').value = draft.pickup_time;
+                if (draft.return_date && document.getElementById('return_date')) document.getElementById('return_date').value = draft.return_date;
+                if (draft.coupon_code && document.getElementById('coupon_code')) document.getElementById('coupon_code').value = draft.coupon_code;
+
+                if (draft.vehicle_type && typeof selectVehicle === 'function') {
+                    selectVehicle(draft.vehicle_type);
+                }
+                if (draft.distance_km && typeof calculateFare === 'function') {
+                    calculateFare();
+                }
+            } catch(e) {
+                console.error('Error restoring draft booking:', e);
+            }
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            restoreDraftBookingForm();
+        });
+    </script>
+</body>
+</html>
     </script>
 </body>
 </html>

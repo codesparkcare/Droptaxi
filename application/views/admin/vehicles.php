@@ -41,7 +41,7 @@
                             <td class="fw-bold text-primary">₹<?= number_format($v['per_km_oneway'], 2) ?> / KM</td>
                             <td class="fw-bold text-success">₹<?= number_format($v['per_km_roundtrip'], 2) ?> / KM</td>
                             <td class="small text-dark">₹<?= $v['driver_batta_oneway'] ?> (1-way) / ₹<?= $v['driver_batta_roundtrip'] ?> (Round)</td>
-                            <td class="small text-secondary"><?= $v['min_km_oneway'] ?> KM</td>
+                            <td class="small text-secondary"><?= $v['min_km_oneway'] ?> KM (1-way) / <?= $v['min_km_roundtrip'] ?> KM (Round)</td>
                             <td><span class="badge <?= $v['status']=='active'?'bg-success':'bg-secondary' ?>"><?= strtoupper($v['status']) ?></span></td>
                             <td class="text-end">
                                 <button class="btn btn-sm btn-outline-primary border-0" data-bs-toggle="modal" data-bs-target="#editVehicleModal_<?= $v['id'] ?>">

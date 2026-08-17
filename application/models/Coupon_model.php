@@ -22,7 +22,7 @@ class Coupon_model extends CI_Model {
         return $query->row_array();
     }
 
-    public function validate_coupon($code, $subtotal)
+    public function validate_coupon($code, $subtotal, $passenger_phone = null, $passenger_email = null)
     {
         $coupon = $this->get_coupon_by_code($code);
         if (!$coupon) {
@@ -41,6 +41,30 @@ class Coupon_model extends CI_Model {
             return array('status' => false, 'message' => 'Minimum booking fare of ₹' . number_format($coupon['min_order_amount'], 0) . ' required for this coupon.');
         }
 
+        // Single-use per user check (phone/email check in past non-cancelled bookings)
+        if (isset($coupon['is_one_time']) && intval($coupon['is_one_time']) === 1) {
+            if (!empty($passenger_phone) || !empty($passenger_email)) {
+                $this->db->group_start();
+                if (!empty($passenger_phone)) {
+                    $this->db->where('passenger_phone', trim($passenger_phone));
+                }
+                if (!empty($passenger_email)) {
+                    $this->db->or_where('passenger_email', trim($passenger_email));
+                }
+                $this->db->group_end();
+                $this->db->where('UPPER(coupon_code)', strtoupper(trim($code)));
+                $this->db->where('booking_status !=', 'cancelled');
+                $used_count = $this->db->count_all_results('bookings');
+
+                if ($used_count > 0) {
+                    return array(
+                        'status' => false,
+                        'message' => 'This coupon (' . strtoupper($coupon['code']) . ') can only be used once per customer and has already been redeemed.'
+                    );
+                }
+            }
+        }
+
         $discount = 0;
         if ($coupon['discount_type'] === 'flat') {
             $discount = floatval($coupon['discount_value']);
@@ -51,12 +75,13 @@ class Coupon_model extends CI_Model {
         $discount = min($discount, $subtotal);
 
         return array(
-            'status' => true,
-            'message' => 'Coupon applied! Saved ₹' . number_format($discount, 0),
-            'code' => strtoupper($coupon['code']),
-            'discount_type' => $coupon['discount_type'],
-            'discount_value' => floatval($coupon['discount_value']),
-            'discount_amount' => round($discount, 2)
+            'status'          => true,
+            'message'         => 'Coupon applied! Saved ₹' . number_format($discount, 0),
+            'code'            => strtoupper($coupon['code']),
+            'discount_type'   => $coupon['discount_type'],
+            'discount_value'  => floatval($coupon['discount_value']),
+            'discount_amount' => round($discount, 2),
+            'is_one_time'     => isset($coupon['is_one_time']) ? intval($coupon['is_one_time']) : 0
         );
     }
 

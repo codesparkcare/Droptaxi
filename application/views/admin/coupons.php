@@ -25,6 +25,7 @@
                             <th class="text-secondary fw-semibold border-0">Discount Type</th>
                             <th class="text-secondary fw-semibold border-0">Discount Value</th>
                             <th class="text-secondary fw-semibold border-0">Min Booking Fare</th>
+                            <th class="text-secondary fw-semibold border-0">Usage Rule</th>
                             <th class="text-secondary fw-semibold border-0">Expiry Date</th>
                             <th class="text-secondary fw-semibold border-0">Status</th>
                             <th class="text-secondary fw-semibold border-0 text-end">Actions</th>
@@ -43,6 +44,12 @@
                                 <?= $c['discount_type']=='flat'?'₹'.number_format($c['discount_value'], 2) : floatval($c['discount_value']).'%' ?>
                             </td>
                             <td class="text-muted fw-semibold">₹<?= number_format($c['min_order_amount'], 2) ?></td>
+                            <td>
+                                <span class="badge <?= !empty($c['is_one_time']) ? 'bg-warning text-dark' : 'bg-secondary' ?>">
+                                    <i class="fa-solid <?= !empty($c['is_one_time']) ? 'fa-user-check' : 'fa-users' ?> me-1"></i>
+                                    <?= !empty($c['is_one_time']) ? '1-Time Per User' : 'Unlimited Uses' ?>
+                                </span>
+                            </td>
                             <td class="small text-secondary">
                                 <?= !empty($c['expiry_date']) ? date('d M Y', strtotime($c['expiry_date'])) : '<span class="text-muted">No Expiry</span>' ?>
                             </td>
@@ -105,6 +112,14 @@
                                             </div>
 
                                             <div class="mb-3">
+                                                <label class="form-label small fw-semibold">Usage Rule (Per User)</label>
+                                                <select class="form-select" name="is_one_time">
+                                                    <option value="1" <?= !empty($c['is_one_time']) ? 'selected' : '' ?>>One-Time Per User (e.g. WELCOME10)</option>
+                                                    <option value="0" <?= empty($c['is_one_time']) ? 'selected' : '' ?>>Multiple Uses Allowed</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="mb-3">
                                                 <label class="form-label small fw-semibold">Expiry Date (Optional)</label>
                                                 <input type="date" class="form-control" name="expiry_date" value="<?= $c['expiry_date'] ?>">
                                             </div>
@@ -119,7 +134,7 @@
                         </div>
                         <?php endforeach; else: ?>
                         <tr>
-                            <td colspan="7" class="text-center text-muted py-4">No coupon codes found. Click "Create Coupon" to add one!</td>
+                            <td colspan="8" class="text-center text-muted py-4">No coupon codes found. Click "Create Coupon" to add one!</td>
                         </tr>
                         <?php endif; ?>
                     </tbody>
@@ -170,6 +185,14 @@
                                 <option value="inactive">Inactive</option>
                             </select>
                         </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Usage Rule (Per User)</label>
+                        <select class="form-select" name="is_one_time">
+                            <option value="1">One-Time Per User (e.g. WELCOME10)</option>
+                            <option value="0" selected>Multiple Uses Allowed</option>
+                        </select>
                     </div>
 
                     <div class="mb-3">
