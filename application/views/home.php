@@ -110,6 +110,32 @@
             background: linear-gradient(135deg, #eab308, var(--primary-yellow-hover));
         }
 
+        /* Mobile Header Actions Custom Styling */
+        @media (max-width: 991.98px) {
+            .header-call-btn {
+                width: 38px;
+                height: 38px;
+                border-radius: 50% !important;
+                padding: 0 !important;
+                display: inline-flex !important;
+                align-items: center;
+                justify-content: center;
+            }
+            .header-icon-btn {
+                width: 38px;
+                height: 38px;
+                padding: 0 !important;
+                display: inline-flex !important;
+                align-items: center;
+                justify-content: center;
+            }
+            .btn-header-login {
+                font-size: 0.85rem !important;
+                padding: 6px 14px !important;
+                border-radius: 50px !important;
+            }
+        }
+
         /* Hero Section */
         .hero-section {
             background: linear-gradient(135deg, rgba(15, 23, 42, 0.94), rgba(30, 41, 59, 0.9)), url('https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&w=1920&q=80') center/cover no-repeat;
@@ -355,29 +381,21 @@
 
     <!-- Main Navigation Bar -->
     <nav class="navbar navbar-expand-lg main-navbar sticky-top">
-        <div class="container">
-            <a class="navbar-brand d-flex align-items-center gap-2" href="<?= base_url() ?>">
+        <div class="container d-flex align-items-center justify-content-between">
+            <a class="navbar-brand d-flex align-items-center gap-2 me-auto me-lg-4" href="<?= base_url() ?>">
                 <div class="logo-badge"><i class="fa-solid fa-taxi"></i></div>
                 <span>Drop<span class="text-warning">Taxi</span></span>
             </a>
 
-            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-
-            <div class="collapse navbar-collapse" id="navbarMain">
-                <ul class="navbar-menu navbar-nav mx-auto">
-                    <li class="nav-item"><a class="nav-link" href="#booking-section">Book Taxi</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#tariffs">Tariff & Rates</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#why-us">Why Choose Us</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
-                </ul>
-                <div class="d-flex align-items-center gap-2" id="navbar-auth-container">
+            <!-- Header Action Items (Visible in Header Bar on Mobile & Desktop) -->
+            <div class="d-flex align-items-center gap-1 gap-sm-2 order-lg-3 ms-auto me-2 me-lg-0">
+                <!-- Customer Login / Account Button (Placed near 3-line hamburger menu on mobile) -->
+                <div id="navbar-auth-container">
                     <?php $is_cust_logged = $this->session->userdata('customer_logged_in'); ?>
                     <?php if($is_cust_logged): ?>
                         <div class="dropdown">
-                            <button class="btn btn-outline-warning rounded-pill px-3 py-2 dropdown-toggle font-weight-bold" type="button" data-bs-toggle="dropdown">
-                                <i class="fa-solid fa-user-circle me-1"></i> <?= html_escape($this->session->userdata('customer_name')) ?>
+                            <button class="btn btn-outline-warning rounded-pill px-2.5 px-md-3 py-1.5 py-md-2 dropdown-toggle font-weight-bold btn-header-login" type="button" data-bs-toggle="dropdown">
+                                <i class="fa-solid fa-user-circle me-1"></i> <span class="d-none d-sm-inline"><?= html_escape($this->session->userdata('customer_name')) ?></span><span class="d-inline d-sm-none">Account</span>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
                                 <li class="px-3 py-2 extra-small text-muted border-bottom">
@@ -390,17 +408,36 @@
                             </ul>
                         </div>
                     <?php else: ?>
-                        <button type="button" class="btn btn-outline-warning rounded-pill px-3 py-2 font-weight-bold" onclick="openCustomerAuthModal()">
-                            <i class="fa-solid fa-user-lock me-1"></i> Customer Sign In / OTP
+                        <button type="button" class="btn btn-outline-warning rounded-pill px-2.5 px-md-3 py-1.5 py-md-2 font-weight-bold btn-header-login" onclick="openCustomerAuthModal()">
+                            <i class="fa-solid fa-user-lock me-1"></i> <span class="d-none d-lg-inline">Customer Sign In / OTP</span><span class="d-inline d-lg-none">Login</span>
                         </button>
                     <?php endif; ?>
-                    <a href="https://wa.me/<?= $settings['whatsapp_number'] ?? '919876543210' ?>" target="_blank" class="btn btn-outline-dark rounded-circle p-2" title="WhatsApp Us">
-                        <i class="fa-brands fa-whatsapp fs-5 text-success"></i>
-                    </a>
-                    <a href="tel:<?= $settings['contact_phone'] ?? '+919876543210' ?>" class="btn btn-brand-yellow">
-                        <i class="fa-solid fa-phone me-2"></i>Call Now
-                    </a>
                 </div>
+
+                <!-- WhatsApp Button (Icon only on mobile) -->
+                <a href="https://wa.me/<?= $settings['whatsapp_number'] ?? '919876543210' ?>" target="_blank" class="btn btn-outline-dark rounded-circle p-2 header-icon-btn" title="WhatsApp Us">
+                    <i class="fa-brands fa-whatsapp fs-5 text-success"></i>
+                </a>
+
+                <!-- Call Button (Icon only on mobile, 'Call Now' on desktop) -->
+                <a href="tel:<?= $settings['contact_phone'] ?? '+919876543210' ?>" class="btn btn-brand-yellow header-call-btn" title="Call Now">
+                    <i class="fa-solid fa-phone"></i><span class="d-none d-lg-inline ms-2">Call Now</span>
+                </a>
+            </div>
+
+            <!-- 3-Line Hamburger Menu Toggler -->
+            <button class="navbar-toggler border-0 order-lg-4 p-1 ms-1" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Collapsible Menu Links -->
+            <div class="collapse navbar-collapse order-lg-2" id="navbarMain">
+                <ul class="navbar-menu navbar-nav mx-auto text-center py-2 py-lg-0">
+                    <li class="nav-item"><a class="nav-link" href="#booking-section">Book Taxi</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#tariffs">Tariff & Rates</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#why-us">Why Choose Us</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
+                </ul>
             </div>
         </div>
     </nav>
