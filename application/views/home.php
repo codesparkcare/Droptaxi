@@ -425,12 +425,12 @@
                 </a>
             </div>
 
-            <!-- 3-Line Hamburger Menu Toggler -->
-            <button class="navbar-toggler border-0 order-lg-4 p-1 ms-1" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+            <!-- 3-Line Hamburger Menu Toggler (Opens Left Side Navigation Drawer on Mobile) -->
+            <button class="navbar-toggler border-0 order-lg-4 p-1 ms-1 d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#leftSideNavDrawer" aria-controls="leftSideNavDrawer">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
-            <!-- Collapsible Menu Links -->
+            <!-- Desktop Navigation Menu Links -->
             <div class="collapse navbar-collapse order-lg-2" id="navbarMain">
                 <ul class="navbar-menu navbar-nav mx-auto text-center py-2 py-lg-0">
                     <li class="nav-item"><a class="nav-link" href="#booking-section">Book Taxi</a></li>
@@ -441,6 +441,59 @@
             </div>
         </div>
     </nav>
+
+    <!-- Left Side Navigation Offcanvas Drawer (Mobile View) -->
+    <div class="offcanvas offcanvas-start shadow" tabindex="-1" id="leftSideNavDrawer" aria-labelledby="leftSideNavDrawerLabel" style="width: 290px; max-width: 85%;">
+        <div class="offcanvas-header bg-dark text-white p-3">
+            <div class="d-flex align-items-center gap-2" id="leftSideNavDrawerLabel">
+                <div class="logo-badge"><i class="fa-solid fa-taxi text-dark"></i></div>
+                <span class="fs-4 fw-extrabold text-white">Drop<span class="text-warning">Taxi</span></span>
+            </div>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body p-0 d-flex flex-column justify-content-between">
+            <div class="py-2">
+                <div class="px-3 py-2 text-uppercase extra-small fw-bold text-muted border-bottom">Navigation</div>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link px-3 py-3 text-dark fw-bold border-bottom d-flex align-items-center justify-content-between" href="#booking-section" data-bs-dismiss="offcanvas">
+                            <span><i class="fa-solid fa-taxi text-warning me-3"></i> Book Taxi</span>
+                            <i class="fa-solid fa-chevron-right text-muted small"></i>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link px-3 py-3 text-dark fw-bold border-bottom d-flex align-items-center justify-content-between" href="#tariffs" data-bs-dismiss="offcanvas">
+                            <span><i class="fa-solid fa-tags text-warning me-3"></i> Tariff & Rates</span>
+                            <i class="fa-solid fa-chevron-right text-muted small"></i>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link px-3 py-3 text-dark fw-bold border-bottom d-flex align-items-center justify-content-between" href="#why-us" data-bs-dismiss="offcanvas">
+                            <span><i class="fa-solid fa-shield-halved text-warning me-3"></i> Why Choose Us</span>
+                            <i class="fa-solid fa-chevron-right text-muted small"></i>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link px-3 py-3 text-dark fw-bold border-bottom d-flex align-items-center justify-content-between" href="#contact" data-bs-dismiss="offcanvas">
+                            <span><i class="fa-solid fa-envelope text-warning me-3"></i> Contact</span>
+                            <i class="fa-solid fa-chevron-right text-muted small"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Helpline & Quick Contact inside Left Nav Drawer -->
+            <div class="p-3 bg-light border-top text-center">
+                <div class="small text-muted mb-2"><i class="fa-solid fa-headset me-1 text-warning"></i> 24x7 Customer Helpline</div>
+                <a href="tel:<?= $settings['contact_phone'] ?? '+919876543210' ?>" class="btn btn-warning w-100 fw-bold rounded-pill mb-2">
+                    <i class="fa-solid fa-phone me-2"></i><?= $settings['contact_phone'] ?? '+91 98765 43210' ?>
+                </a>
+                <a href="https://wa.me/<?= $settings['whatsapp_number'] ?? '919876543210' ?>" target="_blank" class="btn btn-outline-success w-100 fw-bold rounded-pill">
+                    <i class="fa-brands fa-whatsapp me-2"></i>WhatsApp Support
+                </a>
+            </div>
+        </div>
+    </div>
 
     <!-- Hero & Instant Booking Engine Section -->
     <section class="hero-section" id="booking-section">
