@@ -395,9 +395,9 @@
                 <span>Drop<span class="text-warning">Taxi</span></span>
             </a>
 
-            <!-- Header Action Items (Visible in Header Bar on Mobile & Desktop) -->
+            <!-- Header Action Items (Visible in Header Bar) -->
             <div class="d-flex align-items-center gap-1 gap-sm-2 order-lg-3 ms-auto me-2 me-lg-0">
-                <!-- Customer Login / Account Button (Placed near 3-line hamburger menu on mobile) -->
+                <!-- Customer Login / Account Button (Placed near 3-line hamburger menu) -->
                 <div id="navbar-auth-container">
                     <?php $is_cust_logged = $this->session->userdata('customer_logged_in'); ?>
                     <?php if($is_cust_logged): ?>
@@ -421,16 +421,6 @@
                         </button>
                     <?php endif; ?>
                 </div>
-
-                <!-- WhatsApp Button (Icon only on mobile) -->
-                <a href="https://wa.me/<?= $settings['whatsapp_number'] ?? '919876543210' ?>" target="_blank" class="btn btn-outline-dark rounded-circle p-2 header-icon-btn" title="WhatsApp Us">
-                    <i class="fa-brands fa-whatsapp fs-5 text-success"></i>
-                </a>
-
-                <!-- Call Button (Icon only on mobile, 'Call Now' on desktop) -->
-                <a href="tel:<?= $settings['contact_phone'] ?? '+919876543210' ?>" class="btn btn-brand-yellow header-call-btn" title="Call Now">
-                    <i class="fa-solid fa-phone"></i><span class="d-none d-lg-inline ms-2">Call Now</span>
-                </a>
             </div>
 
             <!-- 3-Line Hamburger Menu Toggler (Opens Left Side Navigation Drawer on Mobile) -->
