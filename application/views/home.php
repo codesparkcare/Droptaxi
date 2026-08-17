@@ -58,8 +58,16 @@
             background-color: #ffffff;
             box-shadow: 0 4px 20px rgba(0,0,0,0.06);
             padding: 12px 0;
-            sticky: top;
-            z-index: 1050;
+            position: sticky;
+            top: 0;
+            z-index: 1020;
+        }
+
+        .offcanvas {
+            z-index: 1085 !important;
+        }
+        .offcanvas-backdrop {
+            z-index: 1075 !important;
         }
 
         .navbar-brand .logo-badge {
