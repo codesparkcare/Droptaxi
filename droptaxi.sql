@@ -244,6 +244,28 @@ CREATE TABLE `customers` (
   UNIQUE KEY `phone` (`phone`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Table structure for table `drivers`
+--
+
+DROP TABLE IF EXISTS `drivers`;
+CREATE TABLE `drivers` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL,
+  `phone` varchar(20) NOT NULL,
+  `licence_doc` varchar(255) DEFAULT NULL,
+  `aadhar_doc` varchar(255) DEFAULT NULL,
+  `pan_card_doc` varchar(255) DEFAULT NULL,
+  `bank_account_doc` varchar(255) DEFAULT NULL,
+  `is_phone_verified` tinyint(1) NOT NULL DEFAULT 0,
+  `is_verified` tinyint(1) NOT NULL DEFAULT 0,
+  `status` enum('active','inactive') NOT NULL DEFAULT 'active',
+  `created_at` datetime DEFAULT current_timestamp(),
+  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `phone` (`phone`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;

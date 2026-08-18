@@ -18,6 +18,11 @@ class Vehicle_model extends CI_Model {
         return $query->result_array();
     }
 
+    public function get_active_vehicles()
+    {
+        return $this->get_all_vehicles(true);
+    }
+
     public function get_vehicle_by_id($id)
     {
         $this->db->where('id', $id);

@@ -20,6 +20,11 @@
             </a>
         </li>
         <li>
+            <a href="<?php echo base_url('admin/drivers'); ?>" class="<?= uri_string() == 'admin/drivers' ? 'active' : '' ?>">
+                <i class="fa-solid fa-id-card-clip"></i> Manage Drivers
+            </a>
+        </li>
+        <li>
             <a href="<?php echo base_url('admin/vehicles'); ?>" class="<?= uri_string() == 'admin/vehicles' ? 'active' : '' ?>">
                 <i class="fa-solid fa-sliders"></i> Vehicle Fleet & Tariffs
             </a>

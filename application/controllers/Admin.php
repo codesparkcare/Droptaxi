@@ -14,6 +14,7 @@ class Admin extends CI_Controller {
 		$this->load->model('Enquiry_model');
 		$this->load->model('Coupon_model');
 		$this->load->model('Customer_model');
+		$this->load->model('Driver_model');
 	}
 
 	private function check_auth() {
@@ -288,5 +289,118 @@ class Admin extends CI_Controller {
 			$this->session->set_flashdata('success', 'Customer account status updated successfully!');
 		}
 		redirect('admin/customers');
+	}
+
+	// ========== DRIVER MANAGEMENT ==========
+
+	public function drivers() {
+		$this->check_auth();
+
+		$data['drivers'] = $this->Driver_model->get_all_drivers();
+		$data['total_drivers'] = $this->Driver_model->count_drivers();
+
+		$this->load->view('admin/layout/header');
+		$this->load->view('admin/layout/sidebar');
+		$this->load->view('admin/drivers', $data);
+		$this->load->view('admin/layout/footer');
+	}
+
+	public function save_driver() {
+		$this->check_auth();
+
+		$id = $this->input->post('id');
+		$data = array(
+			'name'  => trim($this->input->post('name')),
+			'phone' => trim($this->input->post('phone'))
+		);
+
+		// Handle file uploads
+		$upload_path = FCPATH . 'uploads/drivers/';
+		if (!is_dir($upload_path)) {
+			mkdir($upload_path, 0755, true);
+		}
+
+		$doc_fields = array('licence_doc', 'aadhar_doc', 'pan_card_doc', 'bank_account_doc');
+		foreach ($doc_fields as $field) {
+			if (!empty($_FILES[$field]['name'])) {
+				$config = array(
+					'upload_path'   => $upload_path,
+					'allowed_types' => 'jpg|jpeg|png|pdf|gif|webp',
+					'max_size'      => 5120, // 5MB
+					'file_name'     => time() . '_' . $_FILES[$field]['name']
+				);
+
+				$this->load->library('upload', $config);
+				$this->upload->initialize($config);
+
+				if ($this->upload->do_upload($field)) {
+					$upload_data = $this->upload->data();
+					$data[$field] = 'uploads/drivers/' . $upload_data['file_name'];
+
+					// Delete old file if updating
+					if ($id) {
+						$existing = $this->Driver_model->get_driver_by_id($id);
+						if (!empty($existing[$field]) && file_exists(FCPATH . $existing[$field])) {
+							unlink(FCPATH . $existing[$field]);
+						}
+					}
+				}
+			}
+		}
+
+		if ($id) {
+			$this->Driver_model->update_driver($id, $data);
+			$this->session->set_flashdata('success', 'Driver details updated successfully!');
+		} else {
+			$this->Driver_model->add_driver($data);
+			$this->session->set_flashdata('success', 'New driver added successfully!');
+		}
+		redirect('admin/drivers');
+	}
+
+	public function delete_driver($id) {
+		$this->check_auth();
+		if ($id) {
+			// Delete uploaded files
+			$driver = $this->Driver_model->get_driver_by_id($id);
+			if ($driver) {
+				$doc_fields = array('licence_doc', 'aadhar_doc', 'pan_card_doc', 'bank_account_doc');
+				foreach ($doc_fields as $field) {
+					if (!empty($driver[$field]) && file_exists(FCPATH . $driver[$field])) {
+						unlink(FCPATH . $driver[$field]);
+					}
+				}
+			}
+			$this->Driver_model->delete_driver($id);
+			$this->session->set_flashdata('success', 'Driver removed successfully!');
+		}
+		redirect('admin/drivers');
+	}
+
+	public function update_driver_status() {
+		$this->check_auth();
+
+		$driver_id = $this->input->post('driver_id');
+		$status    = $this->input->post('status');
+
+		if ($driver_id && in_array($status, array('active', 'inactive'))) {
+			$this->Driver_model->update_status($driver_id, $status);
+			$this->session->set_flashdata('success', 'Driver status updated successfully!');
+		}
+		redirect('admin/drivers');
+	}
+
+	public function toggle_driver_verification() {
+		$this->check_auth();
+
+		$driver_id = $this->input->post('driver_id');
+		$field     = $this->input->post('field'); // is_verified or is_phone_verified
+		$value     = intval($this->input->post('value'));
+
+		if ($driver_id && in_array($field, array('is_verified', 'is_phone_verified'))) {
+			$this->Driver_model->update_verification($driver_id, $field, $value);
+			$this->session->set_flashdata('success', 'Driver verification status updated!');
+		}
+		redirect('admin/drivers');
 	}
 }
