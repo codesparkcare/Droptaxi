@@ -6,26 +6,13 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 | Base Site URL
 |--------------------------------------------------------------------------
 |
-| URL to your CodeIgniter root. Typically this will be your base URL,
-| WITH a trailing slash:
+| URL to your CodeIgniter root. Dynamically resolves current HTTP/HTTPS domain.
 |
-|	http://example.com/
-|
-| WARNING: You MUST set this value!
-|
-| If it is not set, then CodeIgniter will try to guess the protocol and
-| path to your installation, but due to security concerns the hostname will
-| be set to $_SERVER['SERVER_ADDR'] if available, or localhost otherwise.
-| The auto-detection mechanism exists only for convenience during
-| development and MUST NOT be used in production!
-|
-| If you need to allow multiple domains, remember that this file is still
-| a PHP script and you can easily do that on your own.
-|
+*/
 $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' || isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') ? 'https://' : 'http://';
 $host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'localhost';
 $script_name = isset($_SERVER['SCRIPT_NAME']) ? str_replace(basename($_SERVER['SCRIPT_NAME']), '', $_SERVER['SCRIPT_NAME']) : '/droptaxi/';
-$config['base_url'] = $protocol . $host . $script_name;
+$config['base_url'] = rtrim($protocol . $host . $script_name, '/') . '/';
 
 /*
 |--------------------------------------------------------------------------
