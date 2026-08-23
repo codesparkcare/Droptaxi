@@ -369,6 +369,119 @@
             font-weight: 700 !important;
             color: #0f172a !important;
         }
+
+        /* Smart Custom Autocomplete Dropdown */
+        .autocomplete-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .custom-autocomplete-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 15px 35px rgba(15, 23, 42, 0.18), 0 4px 10px rgba(15, 23, 42, 0.06);
+            border: 1px solid #e2e8f0;
+            max-height: 290px;
+            overflow-y: auto;
+            z-index: 9999;
+            margin-top: 5px;
+            padding: 6px 0;
+            display: none;
+        }
+
+        .custom-autocomplete-dropdown.show {
+            display: block;
+            animation: fadeInDown 0.18s ease-out;
+        }
+
+        .autocomplete-item {
+            padding: 9px 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.15s ease;
+            border-bottom: 1px solid #f8fafc;
+        }
+
+        .autocomplete-item:last-child {
+            border-bottom: none;
+        }
+
+        .autocomplete-item:hover, .autocomplete-item.active {
+            background-color: #fffbeb;
+        }
+
+        .autocomplete-item .item-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            background: #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #f59e0b;
+            font-size: 0.85rem;
+            flex-shrink: 0;
+            transition: all 0.15s ease;
+        }
+
+        .autocomplete-item:hover .item-icon, .autocomplete-item.active .item-icon {
+            background: #fef3c7;
+            color: #d97706;
+            transform: scale(1.05);
+        }
+
+        .autocomplete-item .item-content {
+            flex-grow: 1;
+            overflow: hidden;
+            text-align: left;
+        }
+
+        .autocomplete-item .main-text {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #1e293b;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.3;
+        }
+
+        .autocomplete-item .main-text mark {
+            background: #fef08a;
+            color: #0f172a;
+            padding: 1px 2px;
+            border-radius: 3px;
+            font-weight: 800;
+        }
+
+        .autocomplete-item .secondary-text {
+            font-size: 0.76rem;
+            color: #64748b;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-top: 1px;
+        }
+
+        .autocomplete-empty {
+            padding: 14px 16px;
+            text-align: center;
+            font-size: 0.84rem;
+            color: #94a3b8;
+        }
+
+        .autocomplete-loading {
+            padding: 12px;
+            text-align: center;
+            font-size: 0.82rem;
+            color: #d97706;
+        }
     </style>
 </head>
 <body>
@@ -538,15 +651,55 @@
 
                         <form id="taxiBookingForm">
                             <input type="hidden" name="trip_type" id="trip_type" value="oneway">
-                            <input type="hidden" name="distance_km" id="distance_km" value="150">
+                            <input type="hidden" name="distance_km" id="distance_km" value="">
+
+                            <!-- Datalist of Top South India & Tamil Nadu Cities / Hubs -->
+                            <datalist id="tn_popular_places">
+                                <option value="Chennai, Tamil Nadu, India"></option>
+                                <option value="Chennai Central Railway Station, Chennai"></option>
+                                <option value="Chennai International Airport (MAA)"></option>
+                                <option value="Tirunelveli, Tamil Nadu, India"></option>
+                                <option value="Tirunelveli Junction, Tirunelveli"></option>
+                                <option value="Madurai, Tamil Nadu, India"></option>
+                                <option value="Madurai Junction Railway Station"></option>
+                                <option value="Coimbatore, Tamil Nadu, India"></option>
+                                <option value="Coimbatore International Airport (CJB)"></option>
+                                <option value="Trichy (Tiruchirappalli), Tamil Nadu"></option>
+                                <option value="Salem, Tamil Nadu, India"></option>
+                                <option value="Bangalore (Bengaluru), Karnataka, India"></option>
+                                <option value="Kempegowda International Airport (BLR)"></option>
+                                <option value="Pondicherry (Puducherry), India"></option>
+                                <option value="Kanyakumari, Tamil Nadu, India"></option>
+                                <option value="Nagercoil, Tamil Nadu, India"></option>
+                                <option value="Thoothukudi (Tuticorin), Tamil Nadu"></option>
+                                <option value="Tiruppur, Tamil Nadu, India"></option>
+                                <option value="Erode, Tamil Nadu, India"></option>
+                                <option value="Thanjavur, Tamil Nadu, India"></option>
+                                <option value="Dindigul, Tamil Nadu, India"></option>
+                                <option value="Vellore, Tamil Nadu, India"></option>
+                                <option value="Tenkasi, Tamil Nadu, India"></option>
+                                <option value="Courtallam, Tamil Nadu, India"></option>
+                                <option value="Ooty (Udhagamandalam), Tamil Nadu"></option>
+                                <option value="Kodaikanal, Tamil Nadu, India"></option>
+                                <option value="Rameswaram, Tamil Nadu, India"></option>
+                                <option value="Tirupati, Andhra Pradesh, India"></option>
+                                <option value="Hosur, Tamil Nadu, India"></option>
+                                <option value="Kumbakonam, Tamil Nadu, India"></option>
+                                <option value="Tiruvannamalai, Tamil Nadu, India"></option>
+                                <option value="Nagapattinam, Tamil Nadu, India"></option>
+                                <option value="Velankanni, Tamil Nadu, India"></option>
+                            </datalist>
 
                             <!-- Locations -->
                             <div class="row g-3 mb-3">
                                 <div class="col-md-6">
                                     <label class="form-label fw-semibold text-secondary small">Pickup Location</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-light"><i class="fa-solid fa-location-dot text-danger"></i></span>
-                                        <input type="text" class="form-control" name="pickup_location" id="pickup_location" placeholder="e.g. Chennai Central" required onchange="calculateGoogleDistance()" oninput="calculateGoogleDistance()">
+                                    <div class="autocomplete-wrapper position-relative">
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light"><i class="fa-solid fa-location-dot text-danger"></i></span>
+                                            <input type="text" class="form-control location-autocomplete-input" name="pickup_location" id="pickup_location" placeholder="e.g. Melapalayam / Chennai Central" required autocomplete="off">
+                                        </div>
+                                        <div class="custom-autocomplete-dropdown" id="pickup_autocomplete_dropdown"></div>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
@@ -554,16 +707,19 @@
                                         <label class="form-label fw-semibold text-secondary small mb-0">Drop Location</label>
                                         <div class="d-flex align-items-center gap-1">
                                             <span class="badge bg-warning text-dark font-weight-bold" id="disp-km-badge" style="font-size: 0.78rem; padding: 4px 8px;" title="Driving Distance">
-                                                <i class="fa-solid fa-route me-1"></i><span id="disp-km-val">150</span> KM
+                                                <i class="fa-solid fa-route me-1"></i><span id="disp-km-val">--</span> KM
                                             </span>
                                             <span class="badge bg-danger text-white font-weight-bold" id="disp-toll-badge" style="font-size: 0.78rem; padding: 4px 8px;" title="Estimated Toll Plazas & Price">
-                                                <i class="fa-solid fa-road-barrier me-1"></i><span id="disp-toll-val">3</span> Tolls (Est. ₹<span id="disp-toll-price">255</span>)
+                                                <i class="fa-solid fa-road-barrier me-1"></i><span id="disp-toll-val">--</span> Tolls (Est. ₹<span id="disp-toll-price">0</span>)
                                             </span>
                                         </div>
                                     </div>
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-light"><i class="fa-solid fa-flag-checkered text-success"></i></span>
-                                        <input type="text" class="form-control" name="drop_location" id="drop_location" placeholder="e.g. Bangalore / Coimbatore" required onchange="calculateGoogleDistance()" oninput="calculateGoogleDistance()">
+                                    <div class="autocomplete-wrapper position-relative">
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light"><i class="fa-solid fa-flag-checkered text-success"></i></span>
+                                            <input type="text" class="form-control location-autocomplete-input" name="drop_location" id="drop_location" placeholder="e.g. Tirunelveli / Bangalore" required autocomplete="off">
+                                        </div>
+                                        <div class="custom-autocomplete-dropdown" id="drop_autocomplete_dropdown"></div>
                                     </div>
                                 </div>
                             </div>
@@ -658,11 +814,11 @@
                             <div class="fare-estimate-box mb-3">
                                 <div class="d-flex justify-content-between align-items-center mb-1">
                                     <span class="fw-semibold text-secondary small">Est. Distance & Rate:</span>
-                                    <span class="fw-bold text-dark" id="disp-km-rate">150 km @ ₹14/km</span>
+                                    <span class="fw-bold text-dark" id="disp-km-rate">-- km @ ₹14/km</span>
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center mb-1">
                                     <span class="fw-semibold text-secondary small">Est. Toll Gates & Fee:</span>
-                                    <span class="fw-bold text-danger" id="disp-toll-gate-text"><i class="fa-solid fa-road-barrier me-1"></i><span id="disp-toll-count-text">3</span> Tolls (Est. ₹<span id="disp-toll-price-text">255</span>)</span>
+                                    <span class="fw-bold text-danger" id="disp-toll-gate-text"><i class="fa-solid fa-road-barrier me-1"></i><span id="disp-toll-count-text">--</span> Tolls (Est. ₹<span id="disp-toll-price-text">0</span>)</span>
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center mb-1">
                                     <span class="fw-semibold text-secondary small">Driver Batta:</span>
@@ -675,7 +831,7 @@
                                 <hr class="my-2 text-warning">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <span class="fw-extrabold fs-6 text-dark">Estimated Total:</span>
-                                    <span class="fw-extrabold fs-4 text-dark" id="disp-total-fare">₹2,400</span>
+                                    <span class="fw-extrabold fs-4 text-dark" id="disp-total-fare">₹0</span>
                                 </div>
                                 <div class="extra-small text-muted text-end mt-1">* Includes Est. Toll Fee. State Permit & Parking extra if applicable</div>
                             </div>
@@ -1009,7 +1165,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <!-- Google Maps JS API with Places library -->
-    <?php $gmap_key = !empty($settings['google_map_key']) ? $settings['google_map_key'] : 'AIzaSyDEO3zPEcZiGQ2zM5qcDvPqLbHgg9WFPbQ'; ?>
+    <?php $gmap_key = !empty($settings['google_map_key']) ? trim($settings['google_map_key']) : ''; ?>
     <?php if (!empty($gmap_key)): ?>
         <script src="https://maps.googleapis.com/maps/api/js?key=<?= html_escape($gmap_key) ?>&libraries=places&callback=initGooglePlaces" async defer></script>
     <?php endif; ?>
@@ -1019,64 +1175,1034 @@
         var currentVehicle = 'sedan';
         var pickupAutocomplete, dropAutocomplete;
 
-        function initGooglePlaces() {
-            var pickupInput = document.getElementById('pickup_location');
-            var dropInput = document.getElementById('drop_location');
+        var directRouteMatrix = {
+            'chennai___tirunelveli': 625,
+            'chennai___nellai': 625,
+            'chennai___bangalore': 350,
+            'chennai___bengaluru': 350,
+            'chennai___coimbatore': 510,
+            'chennai___madurai': 465,
+            'chennai___trichy': 330,
+            'chennai___tiruchirappalli': 330,
+            'chennai___salem': 345,
+            'chennai___pondicherry': 155,
+            'chennai___puducherry': 155,
+            'chennai___kanyakumari': 705,
+            'chennai___nagercoil': 695,
+            'chennai___thoothukudi': 600,
+            'chennai___tuticorin': 600,
+            'chennai___vellore': 140,
+            'chennai___erode': 430,
+            'chennai___tiruppur': 470,
+            'chennai___thanjavur': 345,
+            'chennai___dindigul': 425,
+            'chennai___tiruvannamalai': 195,
+            'chennai___kumbakonam': 295,
+            'chennai___tenkasi': 650,
+            'chennai___courtallam': 655,
+            'chennai___ooty': 555,
+            'chennai___kodaikanal': 525,
+            'chennai___rameswaram': 560,
+            'chennai___tirupati': 135,
+            'chennai___hosur': 305,
+            'chennai___cuddalore': 185,
+            'chennai___karur': 395,
+            'chennai___theni': 495,
+            'chennai___sivakasi': 540,
+            'chennai___virudhunagar': 510,
+            'chennai___nagapattinam': 320,
+            'chennai___velankanni': 330,
+            'chennai___tiruchendur': 640,
+            'bangalore___coimbatore': 365,
+            'bangalore___madurai': 435,
+            'bangalore___tirunelveli': 595,
+            'bangalore___trichy': 335,
+            'bangalore___salem': 205,
+            'bangalore___pondicherry': 310,
+            'coimbatore___madurai': 215,
+            'coimbatore___tirunelveli': 365,
+            'coimbatore___trichy': 215,
+            'coimbatore___salem': 165,
+            'coimbatore___ooty': 85,
+            'madurai___tirunelveli': 160,
+            'madurai___trichy': 135,
+            'madurai___salem': 235,
+            'madurai___kanyakumari': 240,
+            'madurai___rameswaram': 170,
+            'madurai___kodaikanal': 115,
+            'madurai___theni': 75,
+            'tirunelveli___kanyakumari': 85,
+            'tirunelveli___nagercoil': 75,
+            'tirunelveli___thoothukudi': 50,
+            'tirunelveli___tenkasi': 55,
+            'tirunelveli___courtallam': 60,
+            'tirunelveli___trivandrum': 145,
+            'trichy___thanjavur': 55,
+            'trichy___kumbakonam': 90,
+            'salem___erode': 65,
+            'salem___yercaud': 30
+        };
 
-            if (pickupInput && dropInput && typeof google !== 'undefined' && google.maps && google.maps.places) {
-                var options = {
-                    types: [],
-                    componentRestrictions: { country: 'in' }
-                };
+        var cityCoordinates = {
+            'chennai': {lat: 13.0827, lng: 80.2707},
+            'tirunelveli': {lat: 8.7139, lng: 77.7567},
+            'nellai': {lat: 8.7139, lng: 77.7567},
+            'madurai': {lat: 9.9252, lng: 78.1198},
+            'coimbatore': {lat: 11.0168, lng: 76.9558},
+            'trichy': {lat: 10.7905, lng: 78.7047},
+            'tiruchirappalli': {lat: 10.7905, lng: 78.7047},
+            'salem': {lat: 11.6643, lng: 78.1460},
+            'bangalore': {lat: 12.9716, lng: 77.5946},
+            'bengaluru': {lat: 12.9716, lng: 77.5946},
+            'pondicherry': {lat: 11.9416, lng: 79.8083},
+            'puducherry': {lat: 11.9416, lng: 79.8083},
+            'nagercoil': {lat: 8.1833, lng: 77.4119},
+            'kanyakumari': {lat: 8.0883, lng: 77.5385},
+            'tuticorin': {lat: 8.7642, lng: 78.1348},
+            'thoothukudi': {lat: 8.7642, lng: 78.1348},
+            'tiruppur': {lat: 11.1085, lng: 77.3411},
+            'erode': {lat: 11.3410, lng: 77.7172},
+            'thanjavur': {lat: 10.7870, lng: 79.1378},
+            'tanjore': {lat: 10.7870, lng: 79.1378},
+            'dindigul': {lat: 10.3673, lng: 77.9803},
+            'vellore': {lat: 12.9165, lng: 79.1325},
+            'tiruvannamalai': {lat: 12.2253, lng: 79.0747},
+            'kanchipuram': {lat: 12.8342, lng: 79.7036},
+            'cuddalore': {lat: 11.7480, lng: 79.7714},
+            'kumbakonam': {lat: 10.9601, lng: 79.3845},
+            'karur': {lat: 10.9601, lng: 78.0766},
+            'theni': {lat: 10.0104, lng: 77.4768},
+            'sivakasi': {lat: 9.4533, lng: 77.7971},
+            'virudhunagar': {lat: 9.5680, lng: 77.9624},
+            'tenkasi': {lat: 8.9594, lng: 77.3152},
+            'courtallam': {lat: 8.9328, lng: 77.2743},
+            'kutralam': {lat: 8.9328, lng: 77.2743},
+            'karaikudi': {lat: 10.0667, lng: 78.7833},
+            'ramanathapuram': {lat: 9.3639, lng: 78.8395},
+            'rameswaram': {lat: 9.2876, lng: 79.3129},
+            'nagapattinam': {lat: 10.7672, lng: 79.8449},
+            'velankanni': {lat: 10.6807, lng: 79.8433},
+            'hosur': {lat: 12.7409, lng: 77.8253},
+            'krishnagiri': {lat: 12.5186, lng: 78.2137},
+            'dharmapuri': {lat: 12.1211, lng: 78.1582},
+            'ooty': {lat: 11.4102, lng: 76.6950},
+            'kodaikanal': {lat: 10.2381, lng: 77.4892},
+            'pollachi': {lat: 10.6582, lng: 77.0088},
+            'namakkal': {lat: 11.2189, lng: 78.1674},
+            'pudukkottai': {lat: 10.3797, lng: 78.8208},
+            'chengalpattu': {lat: 12.6841, lng: 79.9836},
+            'villupuram': {lat: 11.9401, lng: 79.4861},
+            'mayiladuthurai': {lat: 11.1075, lng: 79.6524},
+            'tiruvarur': {lat: 10.7725, lng: 79.6365},
+            'tiruchendur': {lat: 8.4958, lng: 78.1218},
+            'sankarankovil': {lat: 9.1714, lng: 77.5326},
+            'kovilpatti': {lat: 9.1751, lng: 77.8687},
+            'rajapalayam': {lat: 9.4532, lng: 77.5539},
+            'srivilliputhur': {lat: 9.5107, lng: 77.6335},
+            'tirupati': {lat: 13.6288, lng: 79.4192},
+            'mysore': {lat: 12.2958, lng: 76.6394},
+            'kochi': {lat: 9.9312, lng: 76.2673},
+            'trivandrum': {lat: 8.5241, lng: 76.9366}
+        };
 
-                pickupAutocomplete = new google.maps.places.Autocomplete(pickupInput, options);
-                dropAutocomplete = new google.maps.places.Autocomplete(dropInput, options);
+        function resetFareDisplay() {
+            var kmValEl = document.getElementById('disp-km-val');
+            if (kmValEl) kmValEl.innerText = '--';
 
-                pickupAutocomplete.addListener('place_changed', function() {
-                    calculateGoogleDistance();
-                });
+            var tollValEl = document.getElementById('disp-toll-val');
+            if (tollValEl) tollValEl.innerText = '--';
 
-                dropAutocomplete.addListener('place_changed', function() {
-                    calculateGoogleDistance();
-                });
+            var tollPriceEl = document.getElementById('disp-toll-price');
+            if (tollPriceEl) tollPriceEl.innerText = '0';
+
+            var tollCountTextEl = document.getElementById('disp-toll-count-text');
+            if (tollCountTextEl) tollCountTextEl.innerText = '--';
+
+            var tollPriceTextEl = document.getElementById('disp-toll-price-text');
+            if (tollPriceTextEl) tollPriceTextEl.innerText = '0';
+
+            var kmRateEl = document.getElementById('disp-km-rate');
+            if (kmRateEl) {
+                var rate = currentVehicle === 'sedan' ? 14 : (currentVehicle === 'suv' ? 19 : (currentVehicle === 'innova' ? 22 : 28));
+                kmRateEl.innerText = '-- km @ ₹' + rate + '/km';
             }
+
+            var battaEl = document.getElementById('disp-batta');
+            if (battaEl) battaEl.innerText = '₹300';
+
+            var totalEl = document.getElementById('disp-total-fare');
+            if (totalEl) totalEl.innerText = '₹0';
+
+            var distInput = document.getElementById('distance_km');
+            if (distInput) distInput.value = '';
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            if (typeof google !== 'undefined' && google.maps && google.maps.places) {
-                initGooglePlaces();
+        function updateLiveFareUI(dist) {
+            if (!dist || dist <= 0) {
+                resetFareDisplay();
+                return;
+            }
+
+            var kmValEl = document.getElementById('disp-km-val');
+            if (kmValEl) kmValEl.innerText = (currentTripType === 'roundtrip') ? (dist * 2) : dist;
+
+            var effectiveKm = (currentTripType === 'roundtrip') ? (dist * 2) : dist;
+            var rate = 14;
+            var minKm = 130;
+            var batta = 300;
+            if (currentVehicle === 'suv') {
+                rate = (currentTripType === 'roundtrip') ? 17 : 19;
+                minKm = (currentTripType === 'roundtrip') ? 250 : 130;
+                batta = (currentTripType === 'roundtrip') ? 500 : 400;
+            } else if (currentVehicle === 'innova') {
+                rate = (currentTripType === 'roundtrip') ? 20 : 22;
+                minKm = (currentTripType === 'roundtrip') ? 250 : 130;
+                batta = (currentTripType === 'roundtrip') ? 500 : 400;
+            } else if (currentVehicle === 'tempo') {
+                rate = (currentTripType === 'roundtrip') ? 25 : 28;
+                minKm = (currentTripType === 'roundtrip') ? 300 : 150;
+                batta = (currentTripType === 'roundtrip') ? 700 : 600;
+            } else {
+                rate = (currentTripType === 'roundtrip') ? 13 : 14;
+                minKm = (currentTripType === 'roundtrip') ? 250 : 130;
+                batta = (currentTripType === 'roundtrip') ? 400 : 300;
+            }
+
+            var tollCount = 0;
+            var tollFee = 0;
+            if (dist > 40) {
+                var oneWayTolls = Math.max(1, Math.round(dist / 55));
+                var tollRate = (currentVehicle === 'tempo') ? 140 : ((currentVehicle === 'innova') ? 115 : ((currentVehicle === 'suv') ? 105 : 85));
+                tollCount = (currentTripType === 'roundtrip') ? (oneWayTolls * 2) : oneWayTolls;
+                tollFee = tollCount * tollRate;
+            }
+
+            var billableKm = Math.max(effectiveKm, minKm);
+            var kmCharge = billableKm * rate;
+            var total = kmCharge + batta + tollFee;
+
+            var tollValEl = document.getElementById('disp-toll-val');
+            if (tollValEl) tollValEl.innerText = tollCount;
+
+            var tollPriceEl = document.getElementById('disp-toll-price');
+            if (tollPriceEl) tollPriceEl.innerText = tollFee.toLocaleString('en-IN');
+
+            var tollCountTextEl = document.getElementById('disp-toll-count-text');
+            if (tollCountTextEl) tollCountTextEl.innerText = tollCount;
+
+            var tollPriceTextEl = document.getElementById('disp-toll-price-text');
+            if (tollPriceTextEl) tollPriceTextEl.innerText = tollFee.toLocaleString('en-IN');
+
+            var kmRateEl = document.getElementById('disp-km-rate');
+            if (kmRateEl) kmRateEl.innerText = billableKm + ' km @ ₹' + rate + '/km';
+
+            var battaEl = document.getElementById('disp-batta');
+            if (battaEl) battaEl.innerText = '₹' + batta;
+
+            var totalEl = document.getElementById('disp-total-fare');
+            if (totalEl) totalEl.innerText = '₹' + total.toLocaleString('en-IN');
+        }
+
+        var areaToCity = {
+            'melapalayam': 'tirunelveli',
+            'palayamkottai': 'tirunelveli',
+            'pettai': 'tirunelveli',
+            'thatchanallur': 'tirunelveli',
+            'vannarpettai': 'tirunelveli',
+            'samathanapuram': 'tirunelveli',
+            'perumalpuram': 'tirunelveli',
+            'high ground': 'tirunelveli',
+            'ktc nagar': 'tirunelveli',
+            'maharaja nagar': 'tirunelveli',
+            'ngo colony': 'tirunelveli',
+            'reddiarpatti': 'tirunelveli',
+            'ambasamudram': 'tirunelveli',
+            'kallidaikurichi': 'tirunelveli',
+            'cheranmahadevi': 'tirunelveli',
+            'kalakkad': 'tirunelveli',
+            'nanguneri': 'tirunelveli',
+            'valliyur': 'tirunelveli',
+            'tisayanvilai': 'tirunelveli',
+            'radhapuram': 'tirunelveli',
+            'kudankulam': 'tirunelveli',
+            'sankarankovil': 'sankarankovil',
+            'alangulam': 'tenkasi',
+            'surandai': 'tenkasi',
+            'kadayanallur': 'tenkasi',
+            'puliyangudi': 'tenkasi',
+            'sengottai': 'tenkasi',
+            'sivagiri': 'tenkasi',
+            'kutralam': 'courtallam',
+            'villapuram': 'madurai',
+            'avaniyapuram': 'madurai',
+            'munichalai': 'madurai',
+            'sellur': 'madurai',
+            'anaiyur': 'madurai',
+            'kochadai': 'madurai',
+            'ss colony': 'madurai',
+            'ponmeni': 'madurai',
+            'pasumalai': 'madurai',
+            'othakadai': 'madurai',
+            'tirumangalam': 'madurai',
+            'thirumangalam': 'madurai',
+            'mattuthavani': 'madurai',
+            'periyar bus stand': 'madurai',
+            'arappalayam': 'madurai',
+            'goripalayam': 'madurai',
+            'simmakkal': 'madurai',
+            'teppakulam': 'madurai',
+            'thiruparankundram': 'madurai',
+            'thirunagar': 'madurai',
+            'anna nagar': 'chennai',
+            't. nagar': 'chennai',
+            't nagar': 'chennai',
+            'thyagaraya nagar': 'chennai',
+            'velachery': 'chennai',
+            'guindy': 'chennai',
+            'tambaram': 'chennai',
+            'chromepet': 'chennai',
+            'pallavaram': 'chennai',
+            'porur': 'chennai',
+            'poonamallee': 'chennai',
+            'medavakkam': 'chennai',
+            'sholinganallur': 'chennai',
+            'omr': 'chennai',
+            'perungudi': 'chennai',
+            'thoraipakkam': 'chennai',
+            'navallur': 'chennai',
+            'siruseri': 'chennai',
+            'adyar': 'chennai',
+            'besant nagar': 'chennai',
+            'thiruvanmiyur': 'chennai',
+            'mylapore': 'chennai',
+            'nungambakkam': 'chennai',
+            'alwarpet': 'chennai',
+            'vadapalani': 'chennai',
+            'ashok nagar': 'chennai',
+            'saidapet': 'chennai',
+            'perambur': 'chennai',
+            'ambattur': 'chennai',
+            'avadi': 'chennai',
+            'kolathur': 'chennai',
+            'madhavaram': 'chennai',
+            'koyambedu': 'chennai',
+            'kilambakkam': 'chennai',
+            'gandhipuram': 'coimbatore',
+            'r.s. puram': 'coimbatore',
+            'rs puram': 'coimbatore',
+            'peelamedu': 'coimbatore',
+            'singanallur': 'coimbatore',
+            'saravanampatti': 'coimbatore',
+            'ganapathy': 'coimbatore',
+            'ukkadam': 'coimbatore',
+            'saibaba colony': 'coimbatore',
+            'thudiyalur': 'coimbatore',
+            'srirangam': 'trichy',
+            'thillai nagar': 'trichy',
+            'cantonment': 'trichy',
+            'chatram': 'trichy',
+            'thuvakudi': 'trichy',
+            'suramangalam': 'salem',
+            'fairlands': 'salem',
+            'hasthampatti': 'salem',
+            'meyyanur': 'salem',
+            'majestic': 'bangalore',
+            'indiranagar': 'bangalore',
+            'koramangala': 'bangalore',
+            'whitefield': 'bangalore',
+            'hsr layout': 'bangalore',
+            'electronic city': 'bangalore',
+            'jayanagar': 'bangalore',
+            'btm layout': 'bangalore',
+            'marathahalli': 'bangalore',
+            'yelahanka': 'bangalore'
+        };
+
+        var curatedPlaces = [
+            // Madurai Area Localities & Hubs
+            {main_text: 'Villapuram', secondary_text: 'Madurai, Tamil Nadu', type: 'area'},
+            {main_text: 'Villapuram Housing Board', secondary_text: 'Villapuram, Madurai, Tamil Nadu', type: 'area'},
+            {main_text: 'Avaniyapuram', secondary_text: 'Madurai, Tamil Nadu', type: 'area'},
+            {main_text: 'Madurai Junction Railway Station', secondary_text: 'Madurai, Tamil Nadu', type: 'rail'},
+            {main_text: 'Mattuthavani Integrated Bus Terminus (MIBT)', secondary_text: 'Madurai, Tamil Nadu', type: 'bus'},
+            {main_text: 'Periyar Bus Stand', secondary_text: 'Madurai, Tamil Nadu', type: 'bus'},
+            {main_text: 'Arappalayam Bus Stand', secondary_text: 'Madurai, Tamil Nadu', type: 'bus'},
+            {main_text: 'Goripalayam', secondary_text: 'Madurai, Tamil Nadu', type: 'area'},
+            {main_text: 'Simmakkal', secondary_text: 'Madurai, Tamil Nadu', type: 'area'},
+            {main_text: 'Anna Nagar Madurai', secondary_text: 'Madurai, Tamil Nadu', type: 'area'},
+            {main_text: 'K.K. Nagar Madurai', secondary_text: 'Madurai, Tamil Nadu', type: 'area'},
+            {main_text: 'Teppakulam & Vandiyur', secondary_text: 'Madurai, Tamil Nadu', type: 'area'},
+            {main_text: 'Thiruparankundram', secondary_text: 'Madurai, Tamil Nadu', type: 'area'},
+            {main_text: 'Thirunagar', secondary_text: 'Madurai, Tamil Nadu', type: 'area'},
+            {main_text: 'Munichalai', secondary_text: 'Madurai, Tamil Nadu', type: 'area'},
+            {main_text: 'Sellur', secondary_text: 'Madurai, Tamil Nadu', type: 'area'},
+            {main_text: 'Anaiyur', secondary_text: 'Madurai, Tamil Nadu', type: 'area'},
+            {main_text: 'Kochadai', secondary_text: 'Madurai, Tamil Nadu', type: 'area'},
+            {main_text: 'SS Colony & Ponmeni', secondary_text: 'Madurai, Tamil Nadu', type: 'area'},
+            {main_text: 'Pasumalai', secondary_text: 'Madurai, Tamil Nadu', type: 'area'},
+            {main_text: 'Othakadai', secondary_text: 'Madurai, Tamil Nadu', type: 'area'},
+            {main_text: 'Tirumangalam Bus Stand', secondary_text: 'Madurai District, Tamil Nadu', type: 'bus'},
+            {main_text: 'Madurai International Airport (IXM)', secondary_text: 'Perungudi, Madurai, Tamil Nadu', type: 'air'},
+            {main_text: 'Melur Bus Stand', secondary_text: 'Madurai District, Tamil Nadu', type: 'bus'},
+            {main_text: 'Usilampatti', secondary_text: 'Madurai District, Tamil Nadu', type: 'area'},
+            {main_text: 'Vadipatti', secondary_text: 'Madurai District, Tamil Nadu', type: 'area'},
+
+            // Tirunelveli & Nellai Area Localities
+            {main_text: 'Melapalayam', secondary_text: 'Tirunelveli, Tamil Nadu', type: 'area'},
+            {main_text: 'Melapalayam Bus Stand', secondary_text: 'Melapalayam, Tirunelveli, Tamil Nadu', type: 'bus'},
+            {main_text: 'Palayamkottai', secondary_text: 'Tirunelveli, Tamil Nadu', type: 'area'},
+            {main_text: 'Palayamkottai Bus Stand', secondary_text: 'Palayamkottai, Tirunelveli, Tamil Nadu', type: 'bus'},
+            {main_text: 'Tirunelveli Junction Railway Station', secondary_text: 'Tirunelveli, Tamil Nadu', type: 'rail'},
+            {main_text: 'Tirunelveli Town', secondary_text: 'Tirunelveli, Tamil Nadu', type: 'area'},
+            {main_text: 'Tirunelveli New Bus Stand (Vaeinthankulam)', secondary_text: 'Tirunelveli, Tamil Nadu', type: 'bus'},
+            {main_text: 'Pettai', secondary_text: 'Tirunelveli, Tamil Nadu', type: 'area'},
+            {main_text: 'Thatchanallur', secondary_text: 'Tirunelveli, Tamil Nadu', type: 'area'},
+            {main_text: 'Vannarpettai', secondary_text: 'Tirunelveli, Tamil Nadu', type: 'area'},
+            {main_text: 'Samathanapuram', secondary_text: 'Palayamkottai, Tirunelveli, Tamil Nadu', type: 'area'},
+            {main_text: 'Perumalpuram', secondary_text: 'Tirunelveli, Tamil Nadu', type: 'area'},
+            {main_text: 'High Ground', secondary_text: 'Palayamkottai, Tirunelveli, Tamil Nadu', type: 'area'},
+            {main_text: 'Maharaja Nagar', secondary_text: 'Palayamkottai, Tirunelveli, Tamil Nadu', type: 'area'},
+            {main_text: 'NGO Colony', secondary_text: 'Tirunelveli, Tamil Nadu', type: 'area'},
+            {main_text: 'KTC Nagar', secondary_text: 'Palayamkottai, Tirunelveli, Tamil Nadu', type: 'area'},
+            {main_text: 'Reddiarpatti', secondary_text: 'Tirunelveli, Tamil Nadu', type: 'area'},
+            {main_text: 'Ambasamudram', secondary_text: 'Tirunelveli District, Tamil Nadu', type: 'area'},
+            {main_text: 'Kallidaikurichi', secondary_text: 'Tirunelveli District, Tamil Nadu', type: 'area'},
+            {main_text: 'Cheranmahadevi', secondary_text: 'Tirunelveli District, Tamil Nadu', type: 'area'},
+            {main_text: 'Kalakkad', secondary_text: 'Tirunelveli District, Tamil Nadu', type: 'area'},
+            {main_text: 'Nanguneri', secondary_text: 'Tirunelveli District, Tamil Nadu', type: 'area'},
+            {main_text: 'Valliyur', secondary_text: 'Tirunelveli District, Tamil Nadu', type: 'area'},
+            {main_text: 'Radhapuram', secondary_text: 'Tirunelveli District, Tamil Nadu', type: 'area'},
+            {main_text: 'Kudankulam', secondary_text: 'Tirunelveli District, Tamil Nadu', type: 'area'},
+            {main_text: 'Tisayanvilai', secondary_text: 'Tirunelveli District, Tamil Nadu', type: 'area'},
+            {main_text: 'Alangulam', secondary_text: 'Tenkasi District, Tamil Nadu', type: 'area'},
+            {main_text: 'Surandai', secondary_text: 'Tenkasi District, Tamil Nadu', type: 'area'},
+            {main_text: 'Tenkasi Junction Railway Station', secondary_text: 'Tenkasi, Tamil Nadu', type: 'rail'},
+            {main_text: 'Courtallam (Kutralam)', secondary_text: 'Tenkasi, Tamil Nadu', type: 'area'},
+            {main_text: 'Sengottai', secondary_text: 'Tenkasi District, Tamil Nadu', type: 'area'},
+            {main_text: 'Kadayanallur', secondary_text: 'Tenkasi District, Tamil Nadu', type: 'area'},
+            {main_text: 'Puliyangudi', secondary_text: 'Tenkasi District, Tamil Nadu', type: 'area'},
+            {main_text: 'Sankarankovil', secondary_text: 'Tenkasi District, Tamil Nadu', type: 'area'},
+            {main_text: 'Sivagiri', secondary_text: 'Tenkasi District, Tamil Nadu', type: 'area'},
+
+            // Chennai Area Localities & Hubs
+            {main_text: 'Chennai Central Railway Station (MAS)', secondary_text: 'Periyamet, Chennai, Tamil Nadu', type: 'rail'},
+            {main_text: 'Chennai Egmore Railway Station (MS)', secondary_text: 'Egmore, Chennai, Tamil Nadu', type: 'rail'},
+            {main_text: 'Chennai International Airport (MAA)', secondary_text: 'Meenambakkam, Chennai, Tamil Nadu', type: 'air'},
+            {main_text: 'CMBT Koyambedu Bus Terminus', secondary_text: 'Koyambedu, Chennai, Tamil Nadu', type: 'bus'},
+            {main_text: 'Kilambakkam KCBT Bus Terminus', secondary_text: 'Kilambakkam, Vandalur, Chennai', type: 'bus'},
+            {main_text: 'T. Nagar (Thyagaraya Nagar)', secondary_text: 'Chennai, Tamil Nadu', type: 'area'},
+            {main_text: 'Anna Nagar', secondary_text: 'Chennai, Tamil Nadu', type: 'area'},
+            {main_text: 'Velachery', secondary_text: 'Chennai, Tamil Nadu', type: 'area'},
+            {main_text: 'Guindy Railway Station / Metro', secondary_text: 'Guindy, Chennai, Tamil Nadu', type: 'rail'},
+            {main_text: 'Tambaram Railway Station & Bus Stand', secondary_text: 'Tambaram, Chennai, Tamil Nadu', type: 'rail'},
+            {main_text: 'Chromepet', secondary_text: 'Chennai, Tamil Nadu', type: 'area'},
+            {main_text: 'Pallavaram', secondary_text: 'Chennai, Tamil Nadu', type: 'area'},
+            {main_text: 'Porur Junction', secondary_text: 'Porur, Chennai, Tamil Nadu', type: 'area'},
+            {main_text: 'Poonamallee Bus Stand', secondary_text: 'Poonamallee, Chennai, Tamil Nadu', type: 'bus'},
+            {main_text: 'OMR (Old Mahabalipuram Road)', secondary_text: 'IT Corridor, Chennai, Tamil Nadu', type: 'area'},
+            {main_text: 'Sholinganallur Junction', secondary_text: 'OMR, Chennai, Tamil Nadu', type: 'area'},
+            {main_text: 'Perungudi / Kandanchavadi', secondary_text: 'OMR, Chennai, Tamil Nadu', type: 'area'},
+            {main_text: 'Thoraipakkam', secondary_text: 'OMR, Chennai, Tamil Nadu', type: 'area'},
+            {main_text: 'Navallur', secondary_text: 'OMR, Chennai, Tamil Nadu', type: 'area'},
+            {main_text: 'Siruseri SIPCOT IT Park', secondary_text: 'Chennai, Tamil Nadu', type: 'area'},
+            {main_text: 'Medavakkam Junction', secondary_text: 'Medavakkam, Chennai, Tamil Nadu', type: 'area'},
+            {main_text: 'Adyar', secondary_text: 'Chennai, Tamil Nadu', type: 'area'},
+            {main_text: 'Besant Nagar (Elliot\'s Beach)', secondary_text: 'Adyar, Chennai, Tamil Nadu', type: 'area'},
+            {main_text: 'Thiruvanmiyur', secondary_text: 'Chennai, Tamil Nadu', type: 'area'},
+            {main_text: 'Mylapore', secondary_text: 'Chennai, Tamil Nadu', type: 'area'},
+            {main_text: 'Nungambakkam', secondary_text: 'Chennai, Tamil Nadu', type: 'area'},
+            {main_text: 'Alwarpet', secondary_text: 'Chennai, Tamil Nadu', type: 'area'},
+            {main_text: 'Vadapalani Metro & Bus Depot', secondary_text: 'Vadapalani, Chennai, Tamil Nadu', type: 'bus'},
+            {main_text: 'Ashok Nagar', secondary_text: 'Chennai, Tamil Nadu', type: 'area'},
+            {main_text: 'K.K. Nagar', secondary_text: 'Chennai, Tamil Nadu', type: 'area'},
+            {main_text: 'Saidapet', secondary_text: 'Chennai, Tamil Nadu', type: 'area'},
+            {main_text: 'Perambur Railway Station', secondary_text: 'Perambur, Chennai, Tamil Nadu', type: 'rail'},
+            {main_text: 'Ambattur Industrial Estate', secondary_text: 'Ambattur, Chennai, Tamil Nadu', type: 'area'},
+            {main_text: 'Avadi Railway Station / Bus Stand', secondary_text: 'Avadi, Chennai, Tamil Nadu', type: 'rail'},
+            {main_text: 'Kolathur', secondary_text: 'Chennai, Tamil Nadu', type: 'area'},
+            {main_text: 'Madhavaram MMBT Bus Terminus', secondary_text: 'Madhavaram, Chennai, Tamil Nadu', type: 'bus'},
+            {main_text: 'Sriperumbudur Industrial Hub', secondary_text: 'Kanchipuram District, Tamil Nadu', type: 'area'},
+            {main_text: 'Chengalpattu Junction', secondary_text: 'Chengalpattu, Tamil Nadu', type: 'rail'},
+            {main_text: 'Mahabalipuram (Mamallapuram)', secondary_text: 'Chengalpattu District, Tamil Nadu', type: 'area'},
+
+            // Coimbatore Area Localities
+            {main_text: 'Coimbatore Junction Railway Station', secondary_text: 'Gopalapuram, Coimbatore, Tamil Nadu', type: 'rail'},
+            {main_text: 'Coimbatore International Airport (CJB)', secondary_text: 'Peelamedu, Coimbatore, Tamil Nadu', type: 'air'},
+            {main_text: 'Gandhipuram Central Bus Stand', secondary_text: 'Gandhipuram, Coimbatore, Tamil Nadu', type: 'bus'},
+            {main_text: 'R.S. Puram (Rathinasabapathy Puram)', secondary_text: 'Coimbatore, Tamil Nadu', type: 'area'},
+            {main_text: 'Peelamedu / PSG Tech', secondary_text: 'Coimbatore, Tamil Nadu', type: 'area'},
+            {main_text: 'Singanallur Bus Stand', secondary_text: 'Singanallur, Coimbatore, Tamil Nadu', type: 'bus'},
+            {main_text: 'Saravanampatti IT Corridor', secondary_text: 'Coimbatore, Tamil Nadu', type: 'area'},
+            {main_text: 'Ganapathy', secondary_text: 'Coimbatore, Tamil Nadu', type: 'area'},
+            {main_text: 'Ukkadam Bus Stand', secondary_text: 'Ukkadam, Coimbatore, Tamil Nadu', type: 'bus'},
+            {main_text: 'Saibaba Colony', secondary_text: 'Coimbatore, Tamil Nadu', type: 'area'},
+            {main_text: 'Thudiyalur', secondary_text: 'Coimbatore, Tamil Nadu', type: 'area'},
+            {main_text: 'Pollachi Junction & Bus Stand', secondary_text: 'Pollachi, Coimbatore, Tamil Nadu', type: 'bus'},
+            {main_text: 'Mettupalayam Railway Station', secondary_text: 'Mettupalayam, Coimbatore, Tamil Nadu', type: 'rail'},
+
+            // Trichy Area Localities
+            {main_text: 'Trichy Junction Railway Station (TPJ)', secondary_text: 'Tiruchirappalli, Tamil Nadu', type: 'rail'},
+            {main_text: 'Trichy Central Bus Stand', secondary_text: 'Cantonment, Tiruchirappalli, Tamil Nadu', type: 'bus'},
+            {main_text: 'Chatram Bus Stand', secondary_text: 'Tiruchirappalli, Tamil Nadu', type: 'bus'},
+            {main_text: 'Srirangam Temple & Railway Station', secondary_text: 'Srirangam, Tiruchirappalli, Tamil Nadu', type: 'rail'},
+            {main_text: 'Thillai Nagar', secondary_text: 'Tiruchirappalli, Tamil Nadu', type: 'area'},
+            {main_text: 'K.K. Nagar Trichy', secondary_text: 'Tiruchirappalli, Tamil Nadu', type: 'area'},
+            {main_text: 'Tiruchirappalli International Airport (TRZ)', secondary_text: 'Airport, Tiruchirappalli, Tamil Nadu', type: 'air'},
+            {main_text: 'Thuvakudi / NIT Trichy', secondary_text: 'Tiruchirappalli, Tamil Nadu', type: 'area'},
+
+            // Salem Area Localities
+            {main_text: 'Salem Junction Railway Station', secondary_text: 'Suramangalam, Salem, Tamil Nadu', type: 'rail'},
+            {main_text: 'Salem New Bus Stand (Central Bus Stand)', secondary_text: 'Meyyanur, Salem, Tamil Nadu', type: 'bus'},
+            {main_text: 'Fairlands', secondary_text: 'Salem, Tamil Nadu', type: 'area'},
+            {main_text: 'Hasthampatti', secondary_text: 'Salem, Tamil Nadu', type: 'area'},
+            {main_text: 'Suramangalam', secondary_text: 'Salem, Tamil Nadu', type: 'area'},
+            {main_text: 'Yercaud Hills', secondary_text: 'Salem District, Tamil Nadu', type: 'area'},
+
+            // Bengaluru / Bangalore
+            {main_text: 'Bangalore City Railway Station (KSR Majestic)', secondary_text: 'Kempegowda, Bengaluru, Karnataka', type: 'rail'},
+            {main_text: 'Kempegowda International Airport (BLR)', secondary_text: 'Devanahalli, Bengaluru, Karnataka', type: 'air'},
+            {main_text: 'Indiranagar Metro Station', secondary_text: 'Indiranagar, Bengaluru, Karnataka', type: 'rail'},
+            {main_text: 'Koramangala', secondary_text: 'Bengaluru, Karnataka', type: 'area'},
+            {main_text: 'Whitefield / ITPL', secondary_text: 'Bengaluru, Karnataka', type: 'area'},
+            {main_text: 'HSR Layout', secondary_text: 'Bengaluru, Karnataka', type: 'area'},
+            {main_text: 'Electronic City Phase 1 & 2', secondary_text: 'Hosur Road, Bengaluru, Karnataka', type: 'area'},
+            {main_text: 'Jayanagar', secondary_text: 'Bengaluru, Karnataka', type: 'area'},
+            {main_text: 'BTM Layout', secondary_text: 'Bengaluru, Karnataka', type: 'area'},
+            {main_text: 'Marathahalli', secondary_text: 'Bengaluru, Karnataka', type: 'area'},
+            {main_text: 'Yelahanka', secondary_text: 'Bengaluru, Karnataka', type: 'area'},
+            {main_text: 'Hosur Bus Stand & Railway Station', secondary_text: 'Hosur, Krishnagiri District, Tamil Nadu', type: 'bus'},
+
+            // South & Central Tamil Nadu Hubs
+            {main_text: 'Thoothukudi (Tuticorin) New Bus Stand', secondary_text: 'Thoothukudi, Tamil Nadu', type: 'bus'},
+            {main_text: 'Thoothukudi Railway Station', secondary_text: 'Thoothukudi, Tamil Nadu', type: 'rail'},
+            {main_text: 'Kayalpattinam', secondary_text: 'Thoothukudi District, Tamil Nadu', type: 'area'},
+            {main_text: 'Tiruchendur Murugan Temple & Beach', secondary_text: 'Tiruchendur, Thoothukudi, Tamil Nadu', type: 'area'},
+            {main_text: 'Kovilpatti Bus Stand & Railway Station', secondary_text: 'Kovilpatti, Thoothukudi, Tamil Nadu', type: 'bus'},
+            {main_text: 'Nagercoil Junction Railway Station', secondary_text: 'Nagercoil, Kanyakumari District, Tamil Nadu', type: 'rail'},
+            {main_text: 'Kanyakumari Beach & Cape Comorin', secondary_text: 'Kanyakumari, Tamil Nadu', type: 'area'},
+            {main_text: 'Marthandam', secondary_text: 'Kanyakumari District, Tamil Nadu', type: 'area'},
+            {main_text: 'Thuckalay', secondary_text: 'Kanyakumari District, Tamil Nadu', type: 'area'},
+            {main_text: 'Trivandrum Central Railway Station (TVC)', secondary_text: 'Thiruvananthapuram, Kerala', type: 'rail'},
+            {main_text: 'Trivandrum International Airport (TRV)', secondary_text: 'Thiruvananthapuram, Kerala', type: 'air'},
+            {main_text: 'Pondicherry (Puducherry) Beach Road', secondary_text: 'White Town, Puducherry', type: 'area'},
+            {main_text: 'Auroville', secondary_text: 'Puducherry / Villupuram', type: 'area'},
+            {main_text: 'Vellore New Bus Stand', secondary_text: 'Vellore, Tamil Nadu', type: 'bus'},
+            {main_text: 'Katpadi Junction Railway Station', secondary_text: 'Vellore, Tamil Nadu', type: 'rail'},
+            {main_text: 'Tiruvannamalai Annamalaiyar Temple', secondary_text: 'Tiruvannamalai, Tamil Nadu', type: 'area'},
+            {main_text: 'Kumbakonam Mahamaham Tank', secondary_text: 'Kumbakonam, Thanjavur, Tamil Nadu', type: 'area'},
+            {main_text: 'Thanjavur Brihadeeswarar Temple', secondary_text: 'Thanjavur, Tamil Nadu', type: 'area'},
+            {main_text: 'Nagapattinam Port', secondary_text: 'Nagapattinam, Tamil Nadu', type: 'area'},
+            {main_text: 'Velankanni Basilica of Our Lady of Good Health', secondary_text: 'Velankanni, Nagapattinam, Tamil Nadu', type: 'area'},
+            {main_text: 'Rameswaram Ramanathaswamy Temple', secondary_text: 'Rameswaram, Ramanathapuram, Tamil Nadu', type: 'area'},
+            {main_text: 'Dindigul Junction & Rock Fort', secondary_text: 'Dindigul, Tamil Nadu', type: 'rail'},
+            {main_text: 'Kodaikanal Lake & Bus Stand', secondary_text: 'Kodaikanal, Dindigul, Tamil Nadu', type: 'area'},
+            {main_text: 'Ooty (Udhagamandalam) Charing Cross', secondary_text: 'Ooty, Nilgiris, Tamil Nadu', type: 'area'},
+            {main_text: 'Coonoor Sim\'s Park', secondary_text: 'Coonoor, Nilgiris, Tamil Nadu', type: 'area'},
+            {main_text: 'Tiruppur Old / New Bus Stand', secondary_text: 'Tiruppur, Tamil Nadu', type: 'bus'},
+            {main_text: 'Erode Central Bus Stand & Railway Station', secondary_text: 'Erode, Tamil Nadu', type: 'bus'},
+            {main_text: 'Karur Bus Stand & Railway Station', secondary_text: 'Karur, Tamil Nadu', type: 'bus'},
+            {main_text: 'Namakkal Bus Stand', secondary_text: 'Namakkal, Tamil Nadu', type: 'bus'},
+            {main_text: 'Rajapalayam', secondary_text: 'Virudhunagar District, Tamil Nadu', type: 'area'},
+            {main_text: 'Srivilliputhur Andal Temple', secondary_text: 'Virudhunagar District, Tamil Nadu', type: 'area'},
+            {main_text: 'Sivakasi Bus Stand', secondary_text: 'Virudhunagar District, Tamil Nadu', type: 'bus'},
+            {main_text: 'Virudhunagar Junction', secondary_text: 'Virudhunagar, Tamil Nadu', type: 'rail'},
+            {main_text: 'Theni Bus Stand', secondary_text: 'Theni, Tamil Nadu', type: 'bus'},
+            {main_text: 'Karaikudi Bus Stand & Railway Station', secondary_text: 'Sivaganga District, Tamil Nadu', type: 'rail'},
+            {main_text: 'Pudukkottai Bus Stand', secondary_text: 'Pudukkottai, Tamil Nadu', type: 'bus'},
+            {main_text: 'Cuddalore Port & Bus Stand', secondary_text: 'Cuddalore, Tamil Nadu', type: 'bus'},
+            {main_text: 'Neyveli Township', secondary_text: 'Cuddalore District, Tamil Nadu', type: 'area'},
+            {main_text: 'Chidambaram Nataraja Temple', secondary_text: 'Chidambaram, Cuddalore, Tamil Nadu', type: 'area'},
+            {main_text: 'Villupuram Junction Railway Station', secondary_text: 'Villupuram, Tamil Nadu', type: 'rail'},
+            {main_text: 'Kanchipuram Kamakshi Amman Temple', secondary_text: 'Kanchipuram, Tamil Nadu', type: 'area'},
+            {main_text: 'Tirupati Railway Station & Alipiri', secondary_text: 'Tirupati, Andhra Pradesh', type: 'rail'}
+        ];
+
+        function getPlaceIcon(type, name) {
+            var n = (name || '').toLowerCase();
+            if (type === 'rail' || n.includes('station') || n.includes('junction') || n.includes('metro')) {
+                return '<i class="fa-solid fa-train"></i>';
+            }
+            if (type === 'air' || n.includes('airport')) {
+                return '<i class="fa-solid fa-plane-departure"></i>';
+            }
+            if (type === 'bus' || n.includes('bus stand') || n.includes('terminus') || n.includes('depot')) {
+                return '<i class="fa-solid fa-bus"></i>';
+            }
+            return '<i class="fa-solid fa-location-dot"></i>';
+        }
+
+        function escapeHtml(str) {
+            return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        function normalizePhonetic(str) {
+            if (!str) return '';
+            return str.toLowerCase()
+                .replace(/au/g, 'u')
+                .replace(/oo/g, 'u')
+                .replace(/ee/g, 'i')
+                .replace(/ai/g, 'y')
+                .replace(/dh/g, 'd')
+                .replace(/th/g, 't')
+                .replace(/gh/g, 'g')
+                .replace(/kh/g, 'k')
+                .replace(/bh/g, 'b')
+                .replace(/ph/g, 'p')
+                .replace(/ch/g, 'c')
+                .replace(/sh/g, 's')
+                .replace(/zh/g, 'z')
+                .replace(/ll/g, 'l')
+                .replace(/pp/g, 'p')
+                .replace(/tt/g, 't')
+                .replace(/rr/g, 'r')
+                .replace(/mm/g, 'm')
+                .replace(/nn/g, 'n')
+                .replace(/[^a-z0-9]/g, '');
+        }
+
+        function levenshteinDistance(a, b) {
+            if (a.length === 0) return b.length;
+            if (b.length === 0) return a.length;
+            var matrix = [];
+            for (var i = 0; i <= b.length; i++) { matrix[i] = [i]; }
+            for (var j = 0; j <= a.length; j++) { matrix[0][j] = j; }
+            for (var i = 1; i <= b.length; i++) {
+                for (var j = 1; j <= a.length; j++) {
+                    if (b.charAt(i - 1) === a.charAt(j - 1)) {
+                        matrix[i][j] = matrix[i - 1][j - 1];
+                    } else {
+                        matrix[i][j] = Math.min(
+                            matrix[i - 1][j - 1] + 1,
+                            matrix[i][j - 1] + 1,
+                            matrix[i - 1][j] + 1
+                        );
+                    }
+                }
+            }
+            return matrix[b.length][a.length];
+        }
+
+        function tokenFuzzyMatch(qToken, targetStr, targetWords) {
+            if (targetStr.indexOf(qToken) !== -1) return { match: true, score: 1 };
+
+            var qNorm = normalizePhonetic(qToken);
+            var targetNorm = normalizePhonetic(targetStr);
+            if (qNorm.length >= 3 && targetNorm.indexOf(qNorm) !== -1) {
+                return { match: true, score: 2 };
+            }
+
+            if (qToken.length >= 4) {
+                for (var i = 0; i < targetWords.length; i++) {
+                    var w = targetWords[i];
+                    if (w.length < 3) continue;
+                    var dist = levenshteinDistance(qToken, w);
+                    var maxAllowedDist = (qToken.length <= 6) ? 1 : 2;
+                    if (dist <= maxAllowedDist) {
+                        return { match: true, score: 3 + dist };
+                    }
+                    var wNorm = normalizePhonetic(w);
+                    if (wNorm.length >= 3 && levenshteinDistance(qNorm, wNorm) <= 1) {
+                        return { match: true, score: 3 };
+                    }
+                }
+            }
+
+            return { match: false, score: 99 };
+        }
+
+        function highlightMatch(text, query) {
+            if (!query || !text) return text;
+            var tokens = query.trim().split(/\s+/).filter(function(t) { return t.length > 0; });
+            if (tokens.length === 0) return text;
+            var patterns = [];
+            tokens.forEach(function(t) {
+                patterns.push(t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+                var norm = normalizePhonetic(t);
+                if (norm.length >= 3) {
+                    patterns.push(norm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+                }
+            });
+            var reg = new RegExp('(' + patterns.join('|') + ')', 'gi');
+            return text.replace(reg, '<mark>$1</mark>');
+        }
+
+        function setupCustomAutocomplete(inputId, dropdownId) {
+            var input = document.getElementById(inputId);
+            var dropdown = document.getElementById(dropdownId);
+            if (!input || !dropdown) return;
+
+            var activeIndex = -1;
+            var debounceTimer = null;
+            var currentItems = [];
+
+            function renderDropdown(items, query) {
+                currentItems = items;
+                activeIndex = -1;
+                if (!items || items.length === 0) {
+                    dropdown.innerHTML = '<div class="autocomplete-empty"><i class="fa-solid fa-map-pin me-1 text-muted"></i> No matching location found. You can still type custom location.</div>';
+                    dropdown.classList.add('show');
+                    return;
+                }
+
+                var html = '';
+                items.forEach(function(item, idx) {
+                    var icon = getPlaceIcon(item.type, item.main_text);
+                    var mainHighlighted = highlightMatch(item.main_text, query);
+                    var secHighlighted = highlightMatch(item.secondary_text, query);
+                    var fullValue = item.description || (item.main_text + ', ' + item.secondary_text);
+                    
+                    html += '<div class="autocomplete-item" data-index="' + idx + '" data-value="' + fullValue.replace(/"/g, '&quot;') + '">';
+                    html += '  <div class="item-icon">' + icon + '</div>';
+                    html += '  <div class="item-content">';
+                    html += '    <div class="main-text">' + mainHighlighted + '</div>';
+                    html += '    <div class="secondary-text">' + secHighlighted + '</div>';
+                    html += '  </div>';
+                    html += '</div>';
+                });
+
+                dropdown.innerHTML = html;
+                dropdown.classList.add('show');
+
+                // Attach click listeners to items
+                var itemEls = dropdown.querySelectorAll('.autocomplete-item');
+                itemEls.forEach(function(el) {
+                    el.addEventListener('mousedown', function(e) {
+                        e.preventDefault(); // Prevent blur before selection
+                        selectItem(el.getAttribute('data-value'));
+                    });
+                });
+            }
+
+            function selectItem(val) {
+                input.value = val;
+                dropdown.classList.remove('show');
+                activeIndex = -1;
+                calculateGoogleDistance();
+            }
+
+            function filterLocalPlaces(q) {
+                if (!q) return curatedPlaces.slice(0, 8);
+                var qClean = q.trim().toLowerCase();
+                var qTokens = qClean.split(/\s+/).filter(function(t) { return t.length > 0; });
+                if (qTokens.length === 0) return curatedPlaces.slice(0, 8);
+
+                var matches = [];
+                for (var i = 0; i < curatedPlaces.length; i++) {
+                    var p = curatedPlaces[i];
+                    var mainLower = p.main_text.toLowerCase();
+                    var secLower = (p.secondary_text || '').toLowerCase();
+                    var fullStr = mainLower + ' ' + secLower;
+                    var targetWords = fullStr.split(/[\s,()/-]+/).filter(function(w) { return w.length > 0; });
+
+                    var allTokensMatch = true;
+                    var totalScore = 0;
+
+                    for (var t = 0; t < qTokens.length; t++) {
+                        var res = tokenFuzzyMatch(qTokens[t], fullStr, targetWords);
+                        if (!res.match) {
+                            allTokensMatch = false;
+                            break;
+                        }
+                        totalScore += res.score;
+                    }
+
+                    if (allTokensMatch) {
+                        if (mainLower === qClean) totalScore -= 10;
+                        else if (mainLower.startsWith(qClean)) totalScore -= 5;
+                        else if (fullStr.indexOf(qClean) !== -1) totalScore -= 3;
+
+                        matches.push({
+                            score: totalScore,
+                            main_text: p.main_text,
+                            secondary_text: p.secondary_text,
+                            type: p.type,
+                            description: p.main_text + ', ' + p.secondary_text
+                        });
+                    }
+                }
+                matches.sort(function(a, b) { return a.score - b.score; });
+                return matches.slice(0, 10);
+            }
+
+            function fetchLivePlaces(q) {
+                var qTrim = q.trim();
+                var localMatches = filterLocalPlaces(qTrim);
+
+                if (localMatches.length > 0) {
+                    renderDropdown(localMatches, qTrim);
+                } else if (qTrim.length >= 2) {
+                    // Show subtle searching loader instead of "No matching location found" while backend is querying
+                    dropdown.innerHTML = '<div class="autocomplete-loading"><i class="fa-solid fa-circle-notch fa-spin me-2"></i>Searching for "<b>' + escapeHtml(qTrim) + '</b>"...</div>';
+                    dropdown.classList.add('show');
+                } else {
+                    renderDropdown([], qTrim);
+                }
+
+                if (qTrim.length >= 2) {
+                    clearTimeout(debounceTimer);
+                    debounceTimer = setTimeout(function() {
+                        fetch('<?= base_url("welcome/places_autocomplete") ?>?input=' + encodeURIComponent(qTrim))
+                            .then(res => res.json())
+                            .then(data => {
+                                if (data && data.status && data.predictions && data.predictions.length > 0) {
+                                    var combined = [];
+                                    var seen = {};
+                                    // Add server results first
+                                    data.predictions.forEach(function(p) {
+                                        var k = (p.main_text + ' ' + (p.secondary_text || '')).toLowerCase().trim();
+                                        if (!seen[k]) {
+                                            seen[k] = true;
+                                            combined.push({
+                                                main_text: p.main_text,
+                                                secondary_text: p.secondary_text || '',
+                                                description: p.description || (p.main_text + ', ' + p.secondary_text),
+                                                type: (p.place_id && p.place_id.startsWith('osm')) ? 'area' : (p.type || 'area')
+                                            });
+                                        }
+                                    });
+                                    // Add any local matches not yet seen
+                                    localMatches.forEach(function(p) {
+                                        var k = (p.main_text + ' ' + (p.secondary_text || '')).toLowerCase().trim();
+                                        if (!seen[k]) {
+                                            seen[k] = true;
+                                            combined.push(p);
+                                        }
+                                    });
+                                    renderDropdown(combined.slice(0, 10), qTrim);
+                                } else {
+                                    if (localMatches.length === 0) {
+                                        renderDropdown([], qTrim);
+                                    }
+                                }
+                            })
+                            .catch(function() {
+                                if (localMatches.length === 0) {
+                                    renderDropdown([], qTrim);
+                                }
+                            });
+                    }, 150);
+                }
+            }
+
+            input.addEventListener('focus', function() {
+                var q = this.value.trim();
+                fetchLivePlaces(q);
+            });
+
+            input.addEventListener('input', function() {
+                var q = this.value.trim();
+                fetchLivePlaces(q);
+                calculateFare();
+            });
+
+            input.addEventListener('keydown', function(e) {
+                var itemEls = dropdown.querySelectorAll('.autocomplete-item');
+                if (!dropdown.classList.contains('show') || itemEls.length === 0) return;
+
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    activeIndex = (activeIndex + 1) % itemEls.length;
+                    highlightActiveItem(itemEls);
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    activeIndex = (activeIndex - 1 + itemEls.length) % itemEls.length;
+                    highlightActiveItem(itemEls);
+                } else if (e.key === 'Enter') {
+                    if (activeIndex >= 0 && activeIndex < itemEls.length) {
+                        e.preventDefault();
+                        selectItem(itemEls[activeIndex].getAttribute('data-value'));
+                    }
+                } else if (e.key === 'Escape') {
+                    dropdown.classList.remove('show');
+                }
+            });
+
+            function highlightActiveItem(itemEls) {
+                itemEls.forEach(function(el, idx) {
+                    if (idx === activeIndex) {
+                        el.classList.add('active');
+                        el.scrollIntoView({ block: 'nearest' });
+                    } else {
+                        el.classList.remove('active');
+                    }
+                });
+            }
+
+            input.addEventListener('blur', function() {
+                setTimeout(function() {
+                    dropdown.classList.remove('show');
+                }, 200);
+            });
+        }
+
+        // Close dropdowns on outside click
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.autocomplete-wrapper')) {
+                document.querySelectorAll('.custom-autocomplete-dropdown').forEach(function(d) {
+                    d.classList.remove('show');
+                });
             }
         });
 
+        function calculateFare() {
+            var pickup = (document.getElementById('pickup_location') ? document.getElementById('pickup_location').value : '').toLowerCase().trim();
+            var drop = (document.getElementById('drop_location') ? document.getElementById('drop_location').value : '').toLowerCase().trim();
+
+            if (!pickup || !drop) {
+                resetFareDisplay();
+                return;
+            }
+
+            var foundP = null;
+            var foundD = null;
+
+            // Check area/suburb mappings first (e.g. melapalayam -> tirunelveli)
+            for (var area in areaToCity) {
+                if (!foundP && pickup.includes(area)) {
+                    foundP = areaToCity[area];
+                }
+                if (!foundD && drop.includes(area)) {
+                    foundD = areaToCity[area];
+                }
+            }
+
+            // Then check direct city coordinates
+            for (var city in cityCoordinates) {
+                if (!foundP && pickup.includes(city)) {
+                    foundP = city;
+                }
+                if (!foundD && drop.includes(city)) {
+                    foundD = city;
+                }
+            }
+
+            var distance = 0;
+            if (foundP && foundD) {
+                var p1 = foundP + '___' + foundD;
+                var p2 = foundD + '___' + foundP;
+
+                if (directRouteMatrix[p1]) {
+                    distance = directRouteMatrix[p1];
+                } else if (directRouteMatrix[p2]) {
+                    distance = directRouteMatrix[p2];
+                } else if (cityCoordinates[foundP] && cityCoordinates[foundD]) {
+                    var lat1 = cityCoordinates[foundP].lat;
+                    var lon1 = cityCoordinates[foundP].lng;
+                    var lat2 = cityCoordinates[foundD].lat;
+                    var lon2 = cityCoordinates[foundD].lng;
+
+                    var R = 6371;
+                    var dLat = (lat2 - lat1) * Math.PI / 180;
+                    var dLon = (lon2 - lon1) * Math.PI / 180;
+                    var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+                    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                    var straightDist = R * c;
+                    distance = Math.max(20, Math.round(straightDist * 1.25));
+                }
+            } else {
+                distance = 150; // Fallback only for unrecognized custom addresses
+            }
+
+            document.getElementById('distance_km').value = distance;
+            
+            // Synchronously update the UI immediately without waiting for network!
+            updateLiveFareUI(distance);
+
+            // Also call backend to calculate fare and coupons
+            fetchFareForDistance(distance);
+
+            // Also asynchronously verify with backend endpoint
+            var pForm = new FormData();
+            pForm.append('pickup', pickup);
+            pForm.append('drop', drop);
+            fetch('<?= base_url("welcome/get_distance") ?>', {
+                method: 'POST',
+                body: pForm
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status && data.distance_km && data.distance_km !== distance) {
+                    document.getElementById('distance_km').value = data.distance_km;
+                    updateLiveFareUI(data.distance_km);
+                    fetchFareForDistance(data.distance_km);
+                }
+            })
+            .catch(function() {});
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            var pickupInput = document.getElementById('pickup_location');
+            var dropInput = document.getElementById('drop_location');
+
+            // Setup Custom Autocomplete Engine
+            setupCustomAutocomplete('pickup_location', 'pickup_autocomplete_dropdown');
+            setupCustomAutocomplete('drop_location', 'drop_autocomplete_dropdown');
+
+            ['input', 'change', 'keyup', 'blur', 'paste'].forEach(function(evt) {
+                if (pickupInput) pickupInput.addEventListener(evt, calculateFare);
+                if (dropInput) dropInput.addEventListener(evt, calculateFare);
+            });
+        });
+
+        function initGooglePlaces() {
+            var pInput = document.getElementById('pickup_location');
+            var dInput = document.getElementById('drop_location');
+            var options = {
+                componentRestrictions: { country: 'in' },
+                fields: ['formatted_address', 'name', 'geometry']
+            };
+            if (pInput && typeof google !== 'undefined' && google.maps && google.maps.places) {
+                try {
+                    pickupAutocomplete = new google.maps.places.Autocomplete(pInput, options);
+                    pickupAutocomplete.addListener('place_changed', function() {
+                        calculateGoogleDistance();
+                    });
+                } catch(e) {}
+            }
+            if (dInput && typeof google !== 'undefined' && google.maps && google.maps.places) {
+                try {
+                    dropAutocomplete = new google.maps.places.Autocomplete(dInput, options);
+                    dropAutocomplete.addListener('place_changed', function() {
+                        calculateGoogleDistance();
+                    });
+                } catch(e) {}
+            }
+        }
+
         function calculateGoogleDistance() {
-            var pickup = document.getElementById('pickup_location').value.trim();
-            var drop = document.getElementById('drop_location').value.trim();
+            var pickup = (document.getElementById('pickup_location') ? document.getElementById('pickup_location').value : '').trim();
+            var drop = (document.getElementById('drop_location') ? document.getElementById('drop_location').value : '').trim();
 
             if (!pickup || !drop) {
                 calculateFare();
                 return;
             }
 
+            // Always calculate fare immediately first
+            calculateFare();
+
             if (typeof google !== 'undefined' && google.maps && google.maps.DistanceMatrixService) {
-                var service = new google.maps.DistanceMatrixService();
-                service.getDistanceMatrix({
-                    origins: [pickup],
-                    destinations: [drop],
-                    travelMode: google.maps.TravelMode.DRIVING,
-                    unitSystem: google.maps.UnitSystem.METRIC
-                }, function(response, status) {
-                    if (status === 'OK' && response.rows && response.rows[0] && response.rows[0].elements && response.rows[0].elements[0] && response.rows[0].elements[0].status === 'OK') {
-                        var distanceMeters = response.rows[0].elements[0].distance.value;
-                        var distanceKm = Math.round(distanceMeters / 1000);
-                        if (distanceKm < 1) distanceKm = 1;
-                        document.getElementById('distance_km').value = distanceKm;
-                        fetchFareForDistance(distanceKm);
-                    } else {
-                        calculateFare();
-                    }
-                });
-            } else {
-                calculateFare();
+                try {
+                    var service = new google.maps.DistanceMatrixService();
+                    service.getDistanceMatrix({
+                        origins: [pickup],
+                        destinations: [drop],
+                        travelMode: google.maps.TravelMode.DRIVING,
+                        unitSystem: google.maps.UnitSystem.METRIC
+                    }, function(response, status) {
+                        if (status === 'OK' && response && response.rows && response.rows[0] && response.rows[0].elements && response.rows[0].elements[0] && response.rows[0].elements[0].status === 'OK') {
+                            var distanceMeters = response.rows[0].elements[0].distance.value;
+                            var distanceKm = Math.round(distanceMeters / 1000);
+                            if (distanceKm < 1) distanceKm = 1;
+                            document.getElementById('distance_km').value = distanceKm;
+                            fetchFareForDistance(distanceKm);
+                        }
+                    });
+                } catch(e) {
+                    console.log('Google Distance Matrix offline, using smart matrix.');
+                }
             }
         }
 
@@ -1254,22 +2380,6 @@
             document.getElementById('drop_location').value = drop;
             document.getElementById('booking-section').scrollIntoView({ behavior: 'smooth' });
             calculateGoogleDistance();
-        }
-
-        function calculateFare() {
-            var pickup = document.getElementById('pickup_location').value;
-            var drop = document.getElementById('drop_location').value;
-            var distance = 150; // Default estimate if distance API is offline
-
-            // Basic route distance heuristic for demonstration
-            if (pickup.toLowerCase().includes('chennai') && drop.toLowerCase().includes('bangalore')) distance = 350;
-            else if (pickup.toLowerCase().includes('chennai') && drop.toLowerCase().includes('coimbatore')) distance = 500;
-            else if (pickup.toLowerCase().includes('chennai') && drop.toLowerCase().includes('pondicherry')) distance = 150;
-            else if (pickup.toLowerCase().includes('chennai') && drop.toLowerCase().includes('madurai')) distance = 460;
-            else if (pickup.toLowerCase().includes('chennai') && drop.toLowerCase().includes('trichy')) distance = 330;
-
-            document.getElementById('distance_km').value = distance;
-            fetchFareForDistance(distance);
         }
 
         document.getElementById('taxiBookingForm').addEventListener('submit', function(e) {
@@ -1495,9 +2605,6 @@
         document.addEventListener('DOMContentLoaded', function() {
             restoreDraftBookingForm();
         });
-    </script>
-</body>
-</html>
     </script>
 </body>
 </html>

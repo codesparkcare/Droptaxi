@@ -64,6 +64,9 @@ CREATE TABLE `bookings` (
   `return_date` date DEFAULT NULL,
   `vehicle_id` int(11) DEFAULT NULL,
   `customer_id` int(11) DEFAULT NULL,
+  `driver_id` int(11) DEFAULT NULL,
+  `driver_name` varchar(100) DEFAULT NULL,
+  `driver_phone` varchar(20) DEFAULT NULL,
   `vehicle_name` varchar(100) NOT NULL,
   `distance_km` decimal(10,2) DEFAULT 0.00,
   `per_km_rate` decimal(10,2) DEFAULT 0.00,
@@ -81,11 +84,14 @@ CREATE TABLE `bookings` (
   `payment_status` enum('pending','paid','failed') DEFAULT 'pending',
   `payment_id` varchar(100) DEFAULT NULL,
   `razorpay_order_id` varchar(100) DEFAULT NULL,
-  `booking_status` enum('new','confirmed','assigned','completed','cancelled') DEFAULT 'new',
+  `booking_status` enum('new','confirmed','assigned','picked_up','completed','cancelled') DEFAULT 'new',
   `created_at` datetime DEFAULT current_timestamp(),
+  `accepted_at` datetime DEFAULT NULL,
+  `picked_up_at` datetime DEFAULT NULL,
+  `completed_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `booking_id` (`booking_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -94,7 +100,7 @@ CREATE TABLE `bookings` (
 
 LOCK TABLES `bookings` WRITE;
 /*!40000 ALTER TABLE `bookings` DISABLE KEYS */;
-INSERT INTO `bookings` VALUES (1,'DT202608161575','One Way Drop','Chennai','Bangalore','2026-08-20','10:00:00',NULL,1,'Sedan (Dzire / Etios)',350.00,14.00,300.00,0.00,0.00,5200.00,5200.00,NULL,0.00,'Rajesh Kumar','9876543210','rajesh@example.com',NULL,'pending',NULL,NULL,'new','2026-08-16 22:17:33');
+INSERT INTO `bookings` VALUES (1,'DT202608161575','One Way Drop','Chennai','Bangalore','2026-08-20','10:00:00',NULL,1,NULL,NULL,NULL,NULL,'Sedan (Dzire / Etios)',350.00,14.00,300.00,0.00,0.00,5200.00,5200.00,NULL,0.00,'Rajesh Kumar','9876543210','rajesh@example.com',NULL,'failed',NULL,NULL,'cancelled','2026-08-16 22:17:33',NULL,NULL,NULL),(2,'DT202608177146','One Way Drop','Madurai, Tamil Nadu, India','Chennai, Tamil Nadu, India','2026-08-17','09:00:00',NULL,1,1,NULL,NULL,NULL,'Sedan (Dzire / Etios)',456.00,14.00,300.00,0.00,680.00,7364.00,7364.00,NULL,0.00,'Abdul Kader','08110899000','ak812282@gmail.com',NULL,'failed',NULL,NULL,'cancelled','2026-08-17 13:20:56',NULL,NULL,NULL),(3,'DT202608176237','Outstation Round Trip','Erode, Tamil Nadu, India','Tirunelveli, Tamil Nadu, India','2026-08-18','09:00:00','2026-08-22',1,2,NULL,NULL,NULL,'Sedan (Dzire / Etios)',361.00,13.00,400.00,0.00,1190.00,10976.00,10976.00,NULL,0.00,'ABDUL KADER U','09894812282','ak812282@gmail.com',NULL,'failed',NULL,NULL,'cancelled','2026-08-17 16:45:56',NULL,NULL,NULL);
 /*!40000 ALTER TABLE `bookings` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -111,7 +117,7 @@ CREATE TABLE `coupons` (
   `discount_type` enum('flat','percent') NOT NULL DEFAULT 'flat',
   `discount_value` decimal(10,2) NOT NULL DEFAULT 0.00,
   `min_order_amount` decimal(10,2) NOT NULL DEFAULT 0.00,
-  `is_one_time` tinyint(1) NOT NULL DEFAULT 0,
+  `is_one_time` tinyint(1) NOT NULL DEFAULT 1,
   `status` enum('active','inactive') NOT NULL DEFAULT 'active',
   `expiry_date` date DEFAULT NULL,
   `created_at` datetime DEFAULT current_timestamp(),
@@ -126,8 +132,82 @@ CREATE TABLE `coupons` (
 
 LOCK TABLES `coupons` WRITE;
 /*!40000 ALTER TABLE `coupons` DISABLE KEYS */;
-INSERT INTO `coupons` VALUES (1,'SAVE100','flat',100.00,1000.00,0,'active',NULL,'2026-08-17 10:46:07'),(2,'WELCOME10','percent',10.00,500.00,1,'active',NULL,'2026-08-17 10:46:07');
+INSERT INTO `coupons` VALUES (1,'SAVE100','flat',100.00,1000.00,1,'active',NULL,'2026-08-17 10:46:07'),(2,'WELCOME10','percent',10.00,500.00,1,'active',NULL,'2026-08-17 10:46:07');
 /*!40000 ALTER TABLE `coupons` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `customers`
+--
+
+DROP TABLE IF EXISTS `customers`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `customers` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL,
+  `phone` varchar(20) NOT NULL,
+  `email` varchar(150) DEFAULT NULL,
+  `otp_code` varchar(10) DEFAULT NULL,
+  `otp_expiry` datetime DEFAULT NULL,
+  `is_verified` tinyint(1) NOT NULL DEFAULT 0,
+  `status` enum('active','blocked') NOT NULL DEFAULT 'active',
+  `created_at` datetime DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `phone` (`phone`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `customers`
+--
+
+LOCK TABLES `customers` WRITE;
+/*!40000 ALTER TABLE `customers` DISABLE KEYS */;
+INSERT INTO `customers` VALUES (1,'Abdul Kader','08110899000','ak812282@gmail.com','8674','2026-08-23 07:36:02',1,'active','2026-08-17 13:20:56'),(2,'ABDUL KADER U','09894812282','ak812282@gmail.com',NULL,NULL,1,'active','2026-08-17 15:24:00'),(3,'Rajesh Kumar','9876543210','test@example.com',NULL,NULL,1,'active','2026-08-17 15:50:48'),(4,'Expresscarts - Online Delivery','8110899000','admin@expresscarts.in','1970','2026-08-23 16:40:00',0,'active','2026-08-23 10:56:09');
+/*!40000 ALTER TABLE `customers` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `drivers`
+--
+
+DROP TABLE IF EXISTS `drivers`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `drivers` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL,
+  `phone` varchar(20) NOT NULL,
+  `email` varchar(150) DEFAULT NULL,
+  `otp_code` varchar(10) DEFAULT NULL,
+  `otp_expiry` datetime DEFAULT NULL,
+  `licence_doc` varchar(255) DEFAULT NULL,
+  `aadhar_doc` varchar(255) DEFAULT NULL,
+  `pan_card_doc` varchar(255) DEFAULT NULL,
+  `bank_account_doc` varchar(255) DEFAULT NULL,
+  `vehicle_number` varchar(50) DEFAULT NULL,
+  `vehicle_type` varchar(50) DEFAULT NULL,
+  `profile_photo` varchar(255) DEFAULT NULL,
+  `fcm_token` text DEFAULT NULL,
+  `is_phone_verified` tinyint(1) NOT NULL DEFAULT 0,
+  `is_verified` tinyint(1) NOT NULL DEFAULT 0,
+  `status` enum('active','inactive') NOT NULL DEFAULT 'active',
+  `created_at` datetime DEFAULT current_timestamp(),
+  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `phone` (`phone`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `drivers`
+--
+
+LOCK TABLES `drivers` WRITE;
+/*!40000 ALTER TABLE `drivers` DISABLE KEYS */;
+INSERT INTO `drivers` VALUES (1,'Syed Ameena','9638527410',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,1,0,'active','2026-08-18 13:49:25','2026-08-18 13:54:17');
+/*!40000 ALTER TABLE `drivers` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -182,7 +262,7 @@ CREATE TABLE `settings` (
 
 LOCK TABLES `settings` WRITE;
 /*!40000 ALTER TABLE `settings` DISABLE KEYS */;
-INSERT INTO `settings` VALUES (1,'site_title','DropTaxi - All Over Tamil Nadu Drop Taxi Service','2026-08-16 22:15:13','2026-08-16 22:15:13'),(2,'contact_phone','+91 98765 43210','2026-08-16 22:15:13','2026-08-16 22:15:13'),(3,'contact_email','info@droptaxi.com','2026-08-16 22:15:13','2026-08-16 22:15:13'),(4,'whatsapp_number','919876543210','2026-08-16 22:15:13','2026-08-16 22:15:13'),(5,'smtp_host','smtp.gmail.com','2026-08-16 22:15:13','2026-08-16 22:15:13'),(6,'smtp_port','587','2026-08-16 22:15:13','2026-08-16 22:15:13'),(7,'smtp_user','','2026-08-16 22:15:13','2026-08-16 22:15:13'),(8,'smtp_pass','','2026-08-16 22:15:13','2026-08-16 22:15:13'),(9,'smtp_crypto','tls','2026-08-16 22:15:13','2026-08-16 22:15:13'),(10,'smtp_from_email','noreply@droptaxi.com','2026-08-16 22:15:13','2026-08-16 22:15:13'),(11,'smtp_from_name','DropTaxi Booking Service','2026-08-16 22:15:13','2026-08-16 22:15:13'),(12,'razorpay_key_id','rzp_test_samplekey123','2026-08-16 22:15:13','2026-08-16 22:15:13'),(13,'razorpay_key_secret','sample_secret_key_123','2026-08-16 22:15:13','2026-08-16 22:15:13'),(14,'razorpay_enabled','1','2026-08-16 22:15:13','2026-08-16 22:15:13'),(15,'google_map_key','AIzaSyDEO3zPEcZiGQ2zM5qcDvPqLbHgg9WFPbQ','2026-08-17 10:24:25','2026-08-17 10:24:25');
+INSERT INTO `settings` VALUES (1,'site_title','Royal Drop Taxi - All Over Tamil Nadu Drop Taxi & Outstation Cab Service','2026-08-16 22:15:13','2026-08-23 20:02:35'),(2,'contact_phone','+91 98765 43210','2026-08-16 22:15:13','2026-08-16 22:15:13'),(3,'contact_email','info@droptaxi.com','2026-08-16 22:15:13','2026-08-16 22:15:13'),(4,'whatsapp_number','919876543210','2026-08-16 22:15:13','2026-08-16 22:15:13'),(5,'smtp_host','smtp.gmail.com','2026-08-16 22:15:13','2026-08-16 22:15:13'),(6,'smtp_port','587','2026-08-16 22:15:13','2026-08-16 22:15:13'),(7,'smtp_user','','2026-08-16 22:15:13','2026-08-16 22:15:13'),(8,'smtp_pass','','2026-08-16 22:15:13','2026-08-16 22:15:13'),(9,'smtp_crypto','tls','2026-08-16 22:15:13','2026-08-16 22:15:13'),(10,'smtp_from_email','noreply@droptaxi.com','2026-08-16 22:15:13','2026-08-16 22:15:13'),(11,'smtp_from_name','Royal Drop Taxi Booking Service','2026-08-16 22:15:13','2026-08-23 20:02:35'),(12,'razorpay_key_id','rzp_test_samplekey123','2026-08-16 22:15:13','2026-08-16 22:15:13'),(13,'razorpay_key_secret','sample_secret_key_123','2026-08-16 22:15:13','2026-08-16 22:15:13'),(14,'razorpay_enabled','1','2026-08-16 22:15:13','2026-08-16 22:15:13'),(15,'google_map_key','AIzaSyDEO3zPEcZiGQ2zM5qcDvPqLbHgg9WFPbQ','2026-08-17 10:24:25','2026-08-23 19:55:19');
 /*!40000 ALTER TABLE `settings` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -221,51 +301,9 @@ CREATE TABLE `vehicles` (
 
 LOCK TABLES `vehicles` WRITE;
 /*!40000 ALTER TABLE `vehicles` DISABLE KEYS */;
-INSERT INTO `vehicles` VALUES (1,'Sedan (Dzire / Etios)','sedan',4,2,130,250,14.00,13.00,300.00,400.00,0.00,NULL,'Comfortable AC Sedan ideal for up to 4 passengers with light luggage.','active','2026-08-16 22:15:13'),(2,'SUV / Ertiga','suv',6,4,130,250,19.00,17.00,400.00,500.00,0.00,NULL,'Spacious AC SUV suitable for family trips with ample legroom.','active','2026-08-16 22:15:13'),(3,'Innova Crysta','innova',7,5,130,250,22.00,20.00,400.00,500.00,0.00,NULL,'Premium executive luxury MUV for comfortable long outstation journeys.','active','2026-08-16 22:15:13'),(4,'Tempo Traveller','tempo',12,10,150,300,28.00,25.00,600.00,700.00,0.00,NULL,'Large group luxury van equipped with AC and spacious seats.','active','2026-08-16 22:15:13');
+INSERT INTO `vehicles` VALUES (1,'Sedan (Dzire / Etios)','sedan',4,2,30,60,14.00,13.00,300.00,400.00,0.00,NULL,'Comfortable AC Sedan ideal for up to 4 passengers with light luggage.','active','2026-08-16 22:15:13'),(2,'SUV / Ertiga','suv',6,4,30,60,19.00,17.00,400.00,500.00,0.00,NULL,'Spacious AC SUV suitable for family trips with ample legroom.','active','2026-08-16 22:15:13'),(3,'Innova Crysta','innova',7,5,30,60,22.00,20.00,400.00,500.00,0.00,NULL,'Premium executive luxury MUV for comfortable long outstation journeys.','active','2026-08-16 22:15:13'),(4,'Tempo Traveller','tempo',12,10,30,60,28.00,25.00,600.00,700.00,0.00,NULL,'Large group luxury van equipped with AC and spacious seats.','active','2026-08-16 22:15:13');
 /*!40000 ALTER TABLE `vehicles` ENABLE KEYS */;
 UNLOCK TABLES;
-
---
--- Table structure for table `customers`
---
-
-DROP TABLE IF EXISTS `customers`;
-CREATE TABLE `customers` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(100) NOT NULL,
-  `phone` varchar(20) NOT NULL,
-  `email` varchar(150) DEFAULT NULL,
-  `otp_code` varchar(10) DEFAULT NULL,
-  `otp_expiry` datetime DEFAULT NULL,
-  `is_verified` tinyint(1) NOT NULL DEFAULT 0,
-  `status` enum('active','blocked') NOT NULL DEFAULT 'active',
-  `created_at` datetime DEFAULT current_timestamp(),
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `phone` (`phone`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Table structure for table `drivers`
---
-
-DROP TABLE IF EXISTS `drivers`;
-CREATE TABLE `drivers` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(100) NOT NULL,
-  `phone` varchar(20) NOT NULL,
-  `licence_doc` varchar(255) DEFAULT NULL,
-  `aadhar_doc` varchar(255) DEFAULT NULL,
-  `pan_card_doc` varchar(255) DEFAULT NULL,
-  `bank_account_doc` varchar(255) DEFAULT NULL,
-  `is_phone_verified` tinyint(1) NOT NULL DEFAULT 0,
-  `is_verified` tinyint(1) NOT NULL DEFAULT 0,
-  `status` enum('active','inactive') NOT NULL DEFAULT 'active',
-  `created_at` datetime DEFAULT current_timestamp(),
-  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `phone` (`phone`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -276,4 +314,4 @@ CREATE TABLE `drivers` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-08-17 10:56:15
+-- Dump completed on 2026-08-23 20:15:00

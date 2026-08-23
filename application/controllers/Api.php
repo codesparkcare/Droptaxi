@@ -79,13 +79,14 @@ class Api extends CI_Controller {
 
         $input = trim($input);
         if (empty($input)) {
-            $this->json_response(array('status' => true, 'predictions' => array()));
+            $this->json_response(array('status' => true, 'input' => '', 'predictions' => array()));
+            return;
         }
 
         $api_key = $this->Setting_model->get_setting('google_map_key', '');
         $predictions = array();
 
-        // 1. Query Google Places API if key is present
+        // 1. Query Google Places API if key is configured
         if (!empty($api_key)) {
             $url = "https://maps.googleapis.com/maps/api/place/autocomplete/json?input=" . urlencode($input) . "&key=" . urlencode($api_key) . "&components=country:in";
             
@@ -93,12 +94,13 @@ class Api extends CI_Controller {
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
             curl_setopt($ch, CURLOPT_TIMEOUT, 3);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
             $resp = curl_exec($ch);
             curl_close($ch);
 
             if ($resp) {
                 $json = json_decode($resp, true);
-                if (isset($json['predictions']) && is_array($json['predictions'])) {
+                if (isset($json['predictions']) && is_array($json['predictions']) && !empty($json['predictions'])) {
                     foreach ($json['predictions'] as $p) {
                         $predictions[] = array(
                             'description'    => $p['description'],
@@ -111,49 +113,351 @@ class Api extends CI_Controller {
             }
         }
 
-        // 2. If Google Places returned zero results or no key, filter local comprehensive place database
-        if (empty($predictions)) {
-            $popular_places = array(
-                array('main_text' => 'Chennai Central Railway Station', 'secondary_text' => 'Periyamet, Chennai, Tamil Nadu'),
-                array('main_text' => 'Chennai International Airport (MAA)', 'secondary_text' => 'Meenambakkam, Chennai, Tamil Nadu'),
-                array('main_text' => 'T. Nagar Bus Stand', 'secondary_text' => 'T. Nagar, Chennai, Tamil Nadu'),
-                array('main_text' => 'Bangalore City Railway Station (KSR)', 'secondary_text' => 'Kempegowda, Bengaluru, Karnataka'),
-                array('main_text' => 'Kempegowda International Airport (BLR)', 'secondary_text' => 'Devanahalli, Bengaluru, Karnataka'),
-                array('main_text' => 'Indiranagar Metro Station', 'secondary_text' => 'Indiranagar, Bengaluru, Karnataka'),
-                array('main_text' => 'Pondicherry Beach Road', 'secondary_text' => 'White Town, Puducherry'),
-                array('main_text' => 'Coimbatore Railway Station', 'secondary_text' => 'Gopalapuram, Coimbatore, Tamil Nadu'),
-                array('main_text' => 'Madurai Junction Railway Station', 'secondary_text' => 'West Veli Street, Madurai, Tamil Nadu'),
-                array('main_text' => 'Trichy Junction Railway Station', 'secondary_text' => 'Sangillyandapuram, Tiruchirappalli, Tamil Nadu'),
-                array('main_text' => 'Salem Junction Railway Station', 'secondary_text' => 'Suramangalam, Salem, Tamil Nadu'),
-                array('main_text' => 'Tirupati Railway Station', 'secondary_text' => 'Tirupati, Andhra Pradesh'),
-            );
+        // 2. Comprehensive South India & Tamil Nadu areas, neighborhoods, towns, stations, and airports database
+        $popular_places = $this->get_curated_places();
 
-            foreach ($popular_places as $place) {
-                if (stripos($place['main_text'], $input) !== false || stripos($place['secondary_text'], $input) !== false) {
-                    $predictions[] = array(
-                        'description'    => $place['main_text'] . ', ' . $place['secondary_text'],
-                        'main_text'      => $place['main_text'],
-                        'secondary_text' => $place['secondary_text'],
-                        'place_id'       => 'local_' . md5($place['main_text'])
-                    );
+        $local_matches = array();
+        $input_clean = strtolower(trim($input));
+        $tokens = array_filter(preg_split('/\s+/', $input_clean));
+
+        foreach ($popular_places as $place) {
+            $main_lower = strtolower($place['main_text']);
+            $sec_lower  = strtolower($place['secondary_text']);
+            $full_str   = $main_lower . ' ' . $sec_lower;
+            $words      = preg_split('/[\s,()\/]+/', $full_str, -1, PREG_SPLIT_NO_EMPTY);
+            $desc       = $place['main_text'] . ', ' . $place['secondary_text'];
+
+            $all_match = true;
+            $score = 0;
+            foreach ($tokens as $token) {
+                $token_match = false;
+                if (strpos($full_str, $token) !== false) {
+                    $token_match = true;
+                    $score += 1;
+                } else {
+                    $norm_token = $this->normalize_phonetic($token);
+                    $norm_full  = $this->normalize_phonetic($full_str);
+                    if (strlen($norm_token) >= 3 && strpos($norm_full, $norm_token) !== false) {
+                        $token_match = true;
+                        $score += 2;
+                    } elseif (strlen($token) >= 4) {
+                        foreach ($words as $w) {
+                            if (strlen($w) >= 3 && levenshtein($token, $w) <= (strlen($token) <= 6 ? 1 : 2)) {
+                                $token_match = true;
+                                $score += 3;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (!$token_match) {
+                    $all_match = false;
+                    break;
                 }
             }
 
-            if (empty($predictions)) {
-                $predictions[] = array(
-                    'description'    => ucfirst($input) . ', Tamil Nadu',
-                    'main_text'      => ucfirst($input),
-                    'secondary_text' => 'Tamil Nadu, India',
-                    'place_id'       => 'custom_' . time()
+            if ($all_match) {
+                if ($main_lower === $input_clean) $score -= 10;
+                elseif (strpos($main_lower, $input_clean) === 0) $score -= 5;
+                elseif (strpos($full_str, $input_clean) !== false) $score -= 3;
+
+                $local_matches[] = array(
+                    'score'          => $score,
+                    'description'    => $desc,
+                    'main_text'      => $place['main_text'],
+                    'secondary_text' => $place['secondary_text'],
+                    'place_id'       => 'local_' . md5($place['main_text'] . $place['secondary_text'])
                 );
             }
+        }
+
+        // Sort local matches by relevance
+        usort($local_matches, function($a, $b) {
+            return $a['score'] - $b['score'];
+        });
+
+        foreach ($local_matches as $m) {
+            unset($m['score']);
+            // Avoid duplicates
+            $already = false;
+            foreach ($predictions as $p) {
+                if (strcasecmp($p['main_text'], $m['main_text']) === 0) {
+                    $already = true;
+                    break;
+                }
+            }
+            if (!$already) {
+                $predictions[] = $m;
+            }
+        }
+
+        // 3. If still fewer than 5 results, query OpenStreetMap Nominatim live search (free, no API key needed)
+        if (count($predictions) < 5 && strlen($input) >= 2) {
+            $osm_url = "https://nominatim.openstreetmap.org/search?q=" . urlencode($input . ' Tamil Nadu') . "&format=json&countrycodes=in&addressdetails=1&limit=6";
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $osm_url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 3);
+            curl_setopt($ch, CURLOPT_USERAGENT, 'DropTaxi-Search/1.0');
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            $resp = curl_exec($ch);
+            curl_close($ch);
+
+            if ($resp) {
+                $json = json_decode($resp, true);
+                if (is_array($json)) {
+                    foreach ($json as $item) {
+                        $name = isset($item['name']) && !empty($item['name']) ? $item['name'] : (isset($item['display_name']) ? explode(',', $item['display_name'])[0] : $input);
+                        $display = isset($item['display_name']) ? $item['display_name'] : $name;
+                        
+                        $already = false;
+                        foreach ($predictions as $p) {
+                            if (strcasecmp($p['main_text'], $name) === 0 || stripos($p['description'], $name) !== false) {
+                                $already = true;
+                                break;
+                            }
+                        }
+                        if (!$already) {
+                            $addr = isset($item['address']) ? $item['address'] : array();
+                            $sec_parts = array();
+                            if (!empty($addr['suburb']) && $addr['suburb'] !== $name) $sec_parts[] = $addr['suburb'];
+                            if (!empty($addr['city']) && $addr['city'] !== $name) $sec_parts[] = $addr['city'];
+                            elseif (!empty($addr['town']) && $addr['town'] !== $name) $sec_parts[] = $addr['town'];
+                            elseif (!empty($addr['county']) && $addr['county'] !== $name) $sec_parts[] = $addr['county'];
+                            if (!empty($addr['state_district'])) $sec_parts[] = $addr['state_district'];
+                            if (!empty($addr['state'])) $sec_parts[] = $addr['state'];
+                            $sec_parts[] = 'India';
+
+                            $sec_text = implode(', ', array_unique($sec_parts));
+                            $predictions[] = array(
+                                'description'    => $name . ($sec_text ? ', ' . $sec_text : ''),
+                                'main_text'      => $name,
+                                'secondary_text' => $sec_text ?: 'Tamil Nadu, India',
+                                'place_id'       => 'osm_' . (isset($item['place_id']) ? $item['place_id'] : rand(1000, 9999))
+                            );
+                        }
+                    }
+                }
+            }
+        }
+
+        // 4. Default fallback if empty
+        if (empty($predictions)) {
+            $predictions[] = array(
+                'description'    => ucfirst($input) . ', Tamil Nadu, India',
+                'main_text'      => ucfirst($input),
+                'secondary_text' => 'Tamil Nadu, India',
+                'place_id'       => 'custom_' . time()
+            );
         }
 
         $this->json_response(array(
             'status'      => true,
             'input'       => $input,
-            'predictions' => $predictions
+            'predictions' => array_slice($predictions, 0, 10)
         ));
+    }
+
+    private function get_curated_places() {
+        return array(
+            // Tirunelveli & Nellai Area Localities
+            array('main_text' => 'Melapalayam', 'secondary_text' => 'Tirunelveli, Tamil Nadu'),
+            array('main_text' => 'Melapalayam Bus Stand', 'secondary_text' => 'Melapalayam, Tirunelveli, Tamil Nadu'),
+            array('main_text' => 'Palayamkottai', 'secondary_text' => 'Tirunelveli, Tamil Nadu'),
+            array('main_text' => 'Palayamkottai Bus Stand', 'secondary_text' => 'Palayamkottai, Tirunelveli, Tamil Nadu'),
+            array('main_text' => 'Tirunelveli Junction Railway Station', 'secondary_text' => 'Tirunelveli, Tamil Nadu'),
+            array('main_text' => 'Tirunelveli Town', 'secondary_text' => 'Tirunelveli, Tamil Nadu'),
+            array('main_text' => 'Tirunelveli New Bus Stand (Vaeinthankulam)', 'secondary_text' => 'Tirunelveli, Tamil Nadu'),
+            array('main_text' => 'Pettai', 'secondary_text' => 'Tirunelveli, Tamil Nadu'),
+            array('main_text' => 'Thatchanallur', 'secondary_text' => 'Tirunelveli, Tamil Nadu'),
+            array('main_text' => 'Vannarpettai', 'secondary_text' => 'Tirunelveli, Tamil Nadu'),
+            array('main_text' => 'Samathanapuram', 'secondary_text' => 'Palayamkottai, Tirunelveli, Tamil Nadu'),
+            array('main_text' => 'Perumalpuram', 'secondary_text' => 'Tirunelveli, Tamil Nadu'),
+            array('main_text' => 'High Ground', 'secondary_text' => 'Palayamkottai, Tirunelveli, Tamil Nadu'),
+            array('main_text' => 'Maharaja Nagar', 'secondary_text' => 'Palayamkottai, Tirunelveli, Tamil Nadu'),
+            array('main_text' => 'NGO Colony', 'secondary_text' => 'Tirunelveli, Tamil Nadu'),
+            array('main_text' => 'KTC Nagar', 'secondary_text' => 'Palayamkottai, Tirunelveli, Tamil Nadu'),
+            array('main_text' => 'Reddiarpatti', 'secondary_text' => 'Tirunelveli, Tamil Nadu'),
+            array('main_text' => 'Ambasamudram', 'secondary_text' => 'Tirunelveli District, Tamil Nadu'),
+            array('main_text' => 'Kallidaikurichi', 'secondary_text' => 'Tirunelveli District, Tamil Nadu'),
+            array('main_text' => 'Cheranmahadevi', 'secondary_text' => 'Tirunelveli District, Tamil Nadu'),
+            array('main_text' => 'Kalakkad', 'secondary_text' => 'Tirunelveli District, Tamil Nadu'),
+            array('main_text' => 'Nanguneri', 'secondary_text' => 'Tirunelveli District, Tamil Nadu'),
+            array('main_text' => 'Valliyur', 'secondary_text' => 'Tirunelveli District, Tamil Nadu'),
+            array('main_text' => 'Radhapuram', 'secondary_text' => 'Tirunelveli District, Tamil Nadu'),
+            array('main_text' => 'Kudankulam', 'secondary_text' => 'Tirunelveli District, Tamil Nadu'),
+            array('main_text' => 'Tisayanvilai', 'secondary_text' => 'Tirunelveli District, Tamil Nadu'),
+            array('main_text' => 'Alangulam', 'secondary_text' => 'Tenkasi District, Tamil Nadu'),
+            array('main_text' => 'Surandai', 'secondary_text' => 'Tenkasi District, Tamil Nadu'),
+            array('main_text' => 'Tenkasi Junction Railway Station', 'secondary_text' => 'Tenkasi, Tamil Nadu'),
+            array('main_text' => 'Courtallam (Kutralam)', 'secondary_text' => 'Tenkasi, Tamil Nadu'),
+            array('main_text' => 'Sengottai', 'secondary_text' => 'Tenkasi District, Tamil Nadu'),
+            array('main_text' => 'Kadayanallur', 'secondary_text' => 'Tenkasi District, Tamil Nadu'),
+            array('main_text' => 'Puliyangudi', 'secondary_text' => 'Tenkasi District, Tamil Nadu'),
+            array('main_text' => 'Sankarankovil', 'secondary_text' => 'Tenkasi District, Tamil Nadu'),
+            array('main_text' => 'Sivagiri', 'secondary_text' => 'Tenkasi District, Tamil Nadu'),
+
+            // Chennai Area Localities & Hubs
+            array('main_text' => 'Chennai Central Railway Station (MAS)', 'secondary_text' => 'Periyamet, Chennai, Tamil Nadu'),
+            array('main_text' => 'Chennai Egmore Railway Station (MS)', 'secondary_text' => 'Egmore, Chennai, Tamil Nadu'),
+            array('main_text' => 'Chennai International Airport (MAA)', 'secondary_text' => 'Meenambakkam, Chennai, Tamil Nadu'),
+            array('main_text' => 'CMBT Koyambedu Bus Terminus', 'secondary_text' => 'Koyambedu, Chennai, Tamil Nadu'),
+            array('main_text' => 'Kilambakkam KCBT Bus Terminus', 'secondary_text' => 'Kilambakkam, Vandalur, Chennai'),
+            array('main_text' => 'T. Nagar (Thyagaraya Nagar)', 'secondary_text' => 'Chennai, Tamil Nadu'),
+            array('main_text' => 'Anna Nagar', 'secondary_text' => 'Chennai, Tamil Nadu'),
+            array('main_text' => 'Velachery', 'secondary_text' => 'Chennai, Tamil Nadu'),
+            array('main_text' => 'Guindy Railway Station / Metro', 'secondary_text' => 'Guindy, Chennai, Tamil Nadu'),
+            array('main_text' => 'Tambaram Railway Station & Bus Stand', 'secondary_text' => 'Tambaram, Chennai, Tamil Nadu'),
+            array('main_text' => 'Chromepet', 'secondary_text' => 'Chennai, Tamil Nadu'),
+            array('main_text' => 'Pallavaram', 'secondary_text' => 'Chennai, Tamil Nadu'),
+            array('main_text' => 'Porur Junction', 'secondary_text' => 'Porur, Chennai, Tamil Nadu'),
+            array('main_text' => 'Poonamallee Bus Stand', 'secondary_text' => 'Poonamallee, Chennai, Tamil Nadu'),
+            array('main_text' => 'OMR (Old Mahabalipuram Road)', 'secondary_text' => 'IT Corridor, Chennai, Tamil Nadu'),
+            array('main_text' => 'Sholinganallur Junction', 'secondary_text' => 'OMR, Chennai, Tamil Nadu'),
+            array('main_text' => 'Perungudi / Kandanchavadi', 'secondary_text' => 'OMR, Chennai, Tamil Nadu'),
+            array('main_text' => 'Thoraipakkam', 'secondary_text' => 'OMR, Chennai, Tamil Nadu'),
+            array('main_text' => 'Navallur', 'secondary_text' => 'OMR, Chennai, Tamil Nadu'),
+            array('main_text' => 'Siruseri SIPCOT IT Park', 'secondary_text' => 'Chennai, Tamil Nadu'),
+            array('main_text' => 'Medavakkam Junction', 'secondary_text' => 'Medavakkam, Chennai, Tamil Nadu'),
+            array('main_text' => 'Adyar', 'secondary_text' => 'Chennai, Tamil Nadu'),
+            array('main_text' => 'Besant Nagar (Elliot\'s Beach)', 'secondary_text' => 'Adyar, Chennai, Tamil Nadu'),
+            array('main_text' => 'Thiruvanmiyur', 'secondary_text' => 'Chennai, Tamil Nadu'),
+            array('main_text' => 'Mylapore', 'secondary_text' => 'Chennai, Tamil Nadu'),
+            array('main_text' => 'Nungambakkam', 'secondary_text' => 'Chennai, Tamil Nadu'),
+            array('main_text' => 'Alwarpet', 'secondary_text' => 'Chennai, Tamil Nadu'),
+            array('main_text' => 'Vadapalani Metro & Bus Depot', 'secondary_text' => 'Vadapalani, Chennai, Tamil Nadu'),
+            array('main_text' => 'Ashok Nagar', 'secondary_text' => 'Chennai, Tamil Nadu'),
+            array('main_text' => 'K.K. Nagar', 'secondary_text' => 'Chennai, Tamil Nadu'),
+            array('main_text' => 'Saidapet', 'secondary_text' => 'Chennai, Tamil Nadu'),
+            array('main_text' => 'Perambur Railway Station', 'secondary_text' => 'Perambur, Chennai, Tamil Nadu'),
+            array('main_text' => 'Ambattur Industrial Estate', 'secondary_text' => 'Ambattur, Chennai, Tamil Nadu'),
+            array('main_text' => 'Avadi Railway Station / Bus Stand', 'secondary_text' => 'Avadi, Chennai, Tamil Nadu'),
+            array('main_text' => 'Kolathur', 'secondary_text' => 'Chennai, Tamil Nadu'),
+            array('main_text' => 'Madhavaram MMBT Bus Terminus', 'secondary_text' => 'Madhavaram, Chennai, Tamil Nadu'),
+            array('main_text' => 'Sriperumbudur Industrial Hub', 'secondary_text' => 'Kanchipuram District, Tamil Nadu'),
+            array('main_text' => 'Chengalpattu Junction', 'secondary_text' => 'Chengalpattu, Tamil Nadu'),
+            array('main_text' => 'Mahabalipuram (Mamallapuram)', 'secondary_text' => 'Chengalpattu District, Tamil Nadu'),
+
+            // Madurai Area Localities
+            array('main_text' => 'Villapuram', 'secondary_text' => 'Madurai, Tamil Nadu'),
+            array('main_text' => 'Villapuram Housing Board', 'secondary_text' => 'Villapuram, Madurai, Tamil Nadu'),
+            array('main_text' => 'Avaniyapuram', 'secondary_text' => 'Madurai, Tamil Nadu'),
+            array('main_text' => 'Madurai Junction Railway Station', 'secondary_text' => 'Madurai, Tamil Nadu'),
+            array('main_text' => 'Mattuthavani Integrated Bus Terminus (MIBT)', 'secondary_text' => 'Madurai, Tamil Nadu'),
+            array('main_text' => 'Periyar Bus Stand', 'secondary_text' => 'Madurai, Tamil Nadu'),
+            array('main_text' => 'Arappalayam Bus Stand', 'secondary_text' => 'Madurai, Tamil Nadu'),
+            array('main_text' => 'Goripalayam', 'secondary_text' => 'Madurai, Tamil Nadu'),
+            array('main_text' => 'Simmakkal', 'secondary_text' => 'Madurai, Tamil Nadu'),
+            array('main_text' => 'Anna Nagar Madurai', 'secondary_text' => 'Madurai, Tamil Nadu'),
+            array('main_text' => 'K.K. Nagar Madurai', 'secondary_text' => 'Madurai, Tamil Nadu'),
+            array('main_text' => 'Teppakulam & Vandiyur', 'secondary_text' => 'Madurai, Tamil Nadu'),
+            array('main_text' => 'Thiruparankundram', 'secondary_text' => 'Madurai, Tamil Nadu'),
+            array('main_text' => 'Thirunagar', 'secondary_text' => 'Madurai, Tamil Nadu'),
+            array('main_text' => 'Munichalai', 'secondary_text' => 'Madurai, Tamil Nadu'),
+            array('main_text' => 'Sellur', 'secondary_text' => 'Madurai, Tamil Nadu'),
+            array('main_text' => 'Anaiyur', 'secondary_text' => 'Madurai, Tamil Nadu'),
+            array('main_text' => 'Kochadai', 'secondary_text' => 'Madurai, Tamil Nadu'),
+            array('main_text' => 'SS Colony & Ponmeni', 'secondary_text' => 'Madurai, Tamil Nadu'),
+            array('main_text' => 'Pasumalai', 'secondary_text' => 'Madurai, Tamil Nadu'),
+            array('main_text' => 'Othakadai', 'secondary_text' => 'Madurai, Tamil Nadu'),
+            array('main_text' => 'Tirumangalam Bus Stand', 'secondary_text' => 'Madurai District, Tamil Nadu'),
+            array('main_text' => 'Madurai International Airport (IXM)', 'secondary_text' => 'Perungudi, Madurai, Tamil Nadu'),
+            array('main_text' => 'Melur Bus Stand', 'secondary_text' => 'Madurai District, Tamil Nadu'),
+            array('main_text' => 'Usilampatti', 'secondary_text' => 'Madurai District, Tamil Nadu'),
+            array('main_text' => 'Vadipatti', 'secondary_text' => 'Madurai District, Tamil Nadu'),
+
+            // Coimbatore Area Localities
+            array('main_text' => 'Coimbatore Junction Railway Station', 'secondary_text' => 'Gopalapuram, Coimbatore, Tamil Nadu'),
+            array('main_text' => 'Coimbatore International Airport (CJB)', 'secondary_text' => 'Peelamedu, Coimbatore, Tamil Nadu'),
+            array('main_text' => 'Gandhipuram Central Bus Stand', 'secondary_text' => 'Gandhipuram, Coimbatore, Tamil Nadu'),
+            array('main_text' => 'R.S. Puram (Rathinasabapathy Puram)', 'secondary_text' => 'Coimbatore, Tamil Nadu'),
+            array('main_text' => 'Peelamedu / PSG Tech', 'secondary_text' => 'Coimbatore, Tamil Nadu'),
+            array('main_text' => 'Singanallur Bus Stand', 'secondary_text' => 'Singanallur, Coimbatore, Tamil Nadu'),
+            array('main_text' => 'Saravanampatti IT Corridor', 'secondary_text' => 'Coimbatore, Tamil Nadu'),
+            array('main_text' => 'Ganapathy', 'secondary_text' => 'Coimbatore, Tamil Nadu'),
+            array('main_text' => 'Ukkadam Bus Stand', 'secondary_text' => 'Ukkadam, Coimbatore, Tamil Nadu'),
+            array('main_text' => 'Saibaba Colony', 'secondary_text' => 'Coimbatore, Tamil Nadu'),
+            array('main_text' => 'Thudiyalur', 'secondary_text' => 'Coimbatore, Tamil Nadu'),
+            array('main_text' => 'Pollachi Junction & Bus Stand', 'secondary_text' => 'Pollachi, Coimbatore, Tamil Nadu'),
+            array('main_text' => 'Mettupalayam Railway Station', 'secondary_text' => 'Mettupalayam, Coimbatore, Tamil Nadu'),
+
+            // Trichy Area Localities
+            array('main_text' => 'Trichy Junction Railway Station (TPJ)', 'secondary_text' => 'Tiruchirappalli, Tamil Nadu'),
+            array('main_text' => 'Trichy Central Bus Stand', 'secondary_text' => 'Cantonment, Tiruchirappalli, Tamil Nadu'),
+            array('main_text' => 'Chatram Bus Stand', 'secondary_text' => 'Tiruchirappalli, Tamil Nadu'),
+            array('main_text' => 'Srirangam Temple & Railway Station', 'secondary_text' => 'Srirangam, Tiruchirappalli, Tamil Nadu'),
+            array('main_text' => 'Thillai Nagar', 'secondary_text' => 'Tiruchirappalli, Tamil Nadu'),
+            array('main_text' => 'K.K. Nagar Trichy', 'secondary_text' => 'Tiruchirappalli, Tamil Nadu'),
+            array('main_text' => 'Tiruchirappalli International Airport (TRZ)', 'secondary_text' => 'Airport, Tiruchirappalli, Tamil Nadu'),
+            array('main_text' => 'Thuvakudi / NIT Trichy', 'secondary_text' => 'Tiruchirappalli, Tamil Nadu'),
+
+            // Salem Area Localities
+            array('main_text' => 'Salem Junction Railway Station', 'secondary_text' => 'Suramangalam, Salem, Tamil Nadu'),
+            array('main_text' => 'Salem New Bus Stand (Central Bus Stand)', 'secondary_text' => 'Meyyanur, Salem, Tamil Nadu'),
+            array('main_text' => 'Fairlands', 'secondary_text' => 'Salem, Tamil Nadu'),
+            array('main_text' => 'Hasthampatti', 'secondary_text' => 'Salem, Tamil Nadu'),
+            array('main_text' => 'Suramangalam', 'secondary_text' => 'Salem, Tamil Nadu'),
+            array('main_text' => 'Yercaud Hills', 'secondary_text' => 'Salem District, Tamil Nadu'),
+
+            // Bengaluru / Bangalore
+            array('main_text' => 'Bangalore City Railway Station (KSR Majestic)', 'secondary_text' => 'Kempegowda, Bengaluru, Karnataka'),
+            array('main_text' => 'Kempegowda International Airport (BLR)', 'secondary_text' => 'Devanahalli, Bengaluru, Karnataka'),
+            array('main_text' => 'Indiranagar Metro Station', 'secondary_text' => 'Indiranagar, Bengaluru, Karnataka'),
+            array('main_text' => 'Koramangala', 'secondary_text' => 'Bengaluru, Karnataka'),
+            array('main_text' => 'Whitefield / ITPL', 'secondary_text' => 'Bengaluru, Karnataka'),
+            array('main_text' => 'HSR Layout', 'secondary_text' => 'Bengaluru, Karnataka'),
+            array('main_text' => 'Electronic City Phase 1 & 2', 'secondary_text' => 'Hosur Road, Bengaluru, Karnataka'),
+            array('main_text' => 'Jayanagar', 'secondary_text' => 'Bengaluru, Karnataka'),
+            array('main_text' => 'BTM Layout', 'secondary_text' => 'Bengaluru, Karnataka'),
+            array('main_text' => 'Marathahalli', 'secondary_text' => 'Bengaluru, Karnataka'),
+            array('main_text' => 'Yelahanka', 'secondary_text' => 'Bengaluru, Karnataka'),
+            array('main_text' => 'Hosur Bus Stand & Railway Station', 'secondary_text' => 'Hosur, Krishnagiri District, Tamil Nadu'),
+
+            // South & Central Tamil Nadu Hubs
+            array('main_text' => 'Thoothukudi (Tuticorin) New Bus Stand', 'secondary_text' => 'Thoothukudi, Tamil Nadu'),
+            array('main_text' => 'Thoothukudi Railway Station', 'secondary_text' => 'Thoothukudi, Tamil Nadu'),
+            array('main_text' => 'Kayalpattinam', 'secondary_text' => 'Thoothukudi District, Tamil Nadu'),
+            array('main_text' => 'Tiruchendur Murugan Temple & Beach', 'secondary_text' => 'Tiruchendur, Thoothukudi, Tamil Nadu'),
+            array('main_text' => 'Kovilpatti Bus Stand & Railway Station', 'secondary_text' => 'Kovilpatti, Thoothukudi, Tamil Nadu'),
+            array('main_text' => 'Nagercoil Junction Railway Station', 'secondary_text' => 'Nagercoil, Kanyakumari District, Tamil Nadu'),
+            array('main_text' => 'Kanyakumari Beach & Cape Comorin', 'secondary_text' => 'Kanyakumari, Tamil Nadu'),
+            array('main_text' => 'Marthandam', 'secondary_text' => 'Kanyakumari District, Tamil Nadu'),
+            array('main_text' => 'Thuckalay', 'secondary_text' => 'Kanyakumari District, Tamil Nadu'),
+            array('main_text' => 'Trivandrum Central Railway Station (TVC)', 'secondary_text' => 'Thiruvananthapuram, Kerala'),
+            array('main_text' => 'Trivandrum International Airport (TRV)', 'secondary_text' => 'Thiruvananthapuram, Kerala'),
+            array('main_text' => 'Pondicherry (Puducherry) Beach Road', 'secondary_text' => 'White Town, Puducherry'),
+            array('main_text' => 'Auroville', 'secondary_text' => 'Puducherry / Villupuram'),
+            array('main_text' => 'Vellore New Bus Stand', 'secondary_text' => 'Vellore, Tamil Nadu'),
+            array('main_text' => 'Katpadi Junction Railway Station', 'secondary_text' => 'Vellore, Tamil Nadu'),
+            array('main_text' => 'Tiruvannamalai Annamalaiyar Temple', 'secondary_text' => 'Tiruvannamalai, Tamil Nadu'),
+            array('main_text' => 'Kumbakonam Mahamaham Tank', 'secondary_text' => 'Kumbakonam, Thanjavur, Tamil Nadu'),
+            array('main_text' => 'Thanjavur Brihadeeswarar Temple', 'secondary_text' => 'Thanjavur, Tamil Nadu'),
+            array('main_text' => 'Nagapattinam Port', 'secondary_text' => 'Nagapattinam, Tamil Nadu'),
+            array('main_text' => 'Velankanni Basilica of Our Lady of Good Health', 'secondary_text' => 'Velankanni, Nagapattinam, Tamil Nadu'),
+            array('main_text' => 'Rameswaram Ramanathaswamy Temple', 'secondary_text' => 'Rameswaram, Ramanathapuram, Tamil Nadu'),
+            array('main_text' => 'Dindigul Junction & Rock Fort', 'secondary_text' => 'Dindigul, Tamil Nadu'),
+            array('main_text' => 'Kodaikanal Lake & Bus Stand', 'secondary_text' => 'Kodaikanal, Dindigul, Tamil Nadu'),
+            array('main_text' => 'Ooty (Udhagamandalam) Charing Cross', 'secondary_text' => 'Ooty, Nilgiris, Tamil Nadu'),
+            array('main_text' => 'Coonoor Sim\'s Park', 'secondary_text' => 'Coonoor, Nilgiris, Tamil Nadu'),
+            array('main_text' => 'Tiruppur Old / New Bus Stand', 'secondary_text' => 'Tiruppur, Tamil Nadu'),
+            array('main_text' => 'Erode Central Bus Stand & Railway Station', 'secondary_text' => 'Erode, Tamil Nadu'),
+            array('main_text' => 'Karur Bus Stand & Railway Station', 'secondary_text' => 'Karur, Tamil Nadu'),
+            array('main_text' => 'Namakkal Bus Stand', 'secondary_text' => 'Namakkal, Tamil Nadu'),
+            array('main_text' => 'Rajapalayam', 'secondary_text' => 'Virudhunagar District, Tamil Nadu'),
+            array('main_text' => 'Srivilliputhur Andal Temple', 'secondary_text' => 'Virudhunagar District, Tamil Nadu'),
+            array('main_text' => 'Sivakasi Bus Stand', 'secondary_text' => 'Virudhunagar District, Tamil Nadu'),
+            array('main_text' => 'Virudhunagar Junction', 'secondary_text' => 'Virudhunagar, Tamil Nadu'),
+            array('main_text' => 'Theni Bus Stand', 'secondary_text' => 'Theni, Tamil Nadu'),
+            array('main_text' => 'Karaikudi Bus Stand & Railway Station', 'secondary_text' => 'Sivaganga District, Tamil Nadu'),
+            array('main_text' => 'Pudukkottai Bus Stand', 'secondary_text' => 'Pudukkottai, Tamil Nadu'),
+            array('main_text' => 'Cuddalore Port & Bus Stand', 'secondary_text' => 'Cuddalore, Tamil Nadu'),
+            array('main_text' => 'Neyveli Township', 'secondary_text' => 'Cuddalore District, Tamil Nadu'),
+            array('main_text' => 'Chidambaram Nataraja Temple', 'secondary_text' => 'Chidambaram, Cuddalore, Tamil Nadu'),
+            array('main_text' => 'Villupuram Junction Railway Station', 'secondary_text' => 'Villupuram, Tamil Nadu'),
+            array('main_text' => 'Kanchipuram Kamakshi Amman Temple', 'secondary_text' => 'Kanchipuram, Tamil Nadu'),
+            array('main_text' => 'Tirupati Railway Station & Alipiri', 'secondary_text' => 'Tirupati, Andhra Pradesh'),
+        );
     }
 
     // POST /api/calculate_fare
@@ -708,5 +1012,18 @@ class Api extends CI_Controller {
 
         $res = $this->Booking_model->update_trip_status($booking_id, $driver_id, $new_status);
         $this->json_response($res);
+    }
+
+    private function normalize_phonetic($str) {
+        $str = strtolower(trim($str));
+        $replaces = array(
+            'au' => 'u', 'oo' => 'u', 'ee' => 'i', 'ai' => 'y',
+            'dh' => 'd', 'th' => 't', 'gh' => 'g', 'kh' => 'k',
+            'bh' => 'b', 'ph' => 'p', 'ch' => 'c', 'sh' => 's',
+            'zh' => 'z', 'll' => 'l', 'pp' => 'p', 'tt' => 't',
+            'rr' => 'r', 'mm' => 'm', 'nn' => 'n'
+        );
+        $str = strtr($str, $replaces);
+        return preg_replace('/[^a-z0-9]/', '', $str);
     }
 }
