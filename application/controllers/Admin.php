@@ -542,4 +542,44 @@ class Admin extends CI_Controller {
 		}
 		redirect('admin/blogs');
 	}
+
+	public function upload_editor_image() {
+		$this->check_auth();
+
+		if (!empty($_FILES['upload']['name'])) {
+			$config['upload_path']   = FCPATH . 'uploads/blogs/';
+			$config['allowed_types'] = 'jpg|jpeg|png|webp|svg|gif';
+			$config['max_size']      = 5120;
+			$config['encrypt_name']  = TRUE;
+
+			if (!is_dir($config['upload_path'])) {
+				@mkdir($config['upload_path'], 0777, TRUE);
+			}
+
+			$this->load->library('upload', $config);
+			if ($this->upload->do_upload('upload')) {
+				$upload_data = $this->upload->data();
+				$file_url = base_url('uploads/blogs/' . $upload_data['file_name']);
+				$func_num = $this->input->get('CKEditorFuncNum');
+
+				if ($func_num) {
+					echo "<script type='text/javascript'>window.parent.CKEDITOR.tools.callFunction($func_num, '$file_url', 'Image uploaded successfully');</script>";
+				} else {
+					header('Content-Type: application/json');
+					echo json_encode(array(
+						'uploaded' => 1,
+						'fileName' => $upload_data['file_name'],
+						'url'      => $file_url
+					));
+				}
+				return;
+			}
+		}
+
+		header('Content-Type: application/json');
+		echo json_encode(array(
+			'uploaded' => 0,
+			'error'    => array('message' => 'Image upload failed. Please try again.')
+		));
+	}
 }

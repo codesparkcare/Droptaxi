@@ -51,9 +51,9 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label fw-semibold small">Full Article Content (HTML allowed) <span class="text-danger">*</span></label>
-                        <textarea class="form-control font-monospace" name="content" rows="14" placeholder="Write full HTML blog post with headings (<h2>, <h3>), paragraphs (<p>), bullet points (<ul>, <li>), and call-to-actions..." required><?= html_escape($blog['content'] ?? '') ?></textarea>
-                        <div class="form-text small text-muted">Supports full semantic HTML tags: <code>&lt;h2&gt;</code>, <code>&lt;h3&gt;</code>, <code>&lt;p&gt;</code>, <code>&lt;ul&gt;</code>, <code>&lt;strong&gt;</code>, <code>&lt;blockquote&gt;</code>.</div>
+                        <label class="form-label fw-semibold small">Full Article Content (Rich WYSIWYG Editor) <span class="text-danger">*</span></label>
+                        <textarea class="form-control" name="content" id="blog_content" rows="16" placeholder="Write full formatted blog post..."><?= html_escape($blog['content'] ?? '') ?></textarea>
+                        <div class="form-text small text-muted">Use the rich toolbar above to format headings, add images, links, tables, and lists.</div>
                     </div>
                 </div>
 
@@ -148,7 +148,34 @@
     </form>
 </div>
 
+<!-- Load CKEditor 4 Full WYSIWYG CDN -->
+<script src="https://cdn.ckeditor.com/4.22.1/full/ckeditor.js"></script>
+
 <script>
+// Initialize CKEditor 4 with full professional toolbar
+if (typeof CKEDITOR !== 'undefined') {
+    CKEDITOR.replace('blog_content', {
+        height: 460,
+        toolbar: [
+            { name: 'document', items: [ 'Source', '-', 'Preview', 'Print' ] },
+            { name: 'clipboard', items: [ 'Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo' ] },
+            { name: 'editing', items: [ 'Find', 'Replace', '-', 'SelectAll' ] },
+            '/',
+            { name: 'basicstyles', items: [ 'Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'CopyFormatting', 'RemoveFormat' ] },
+            { name: 'paragraph', items: [ 'NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock' ] },
+            { name: 'links', items: [ 'Link', 'Unlink', 'Anchor' ] },
+            { name: 'insert', items: [ 'Image', 'Table', 'HorizontalRule', 'SpecialChar' ] },
+            '/',
+            { name: 'styles', items: [ 'Styles', 'Format', 'Font', 'FontSize' ] },
+            { name: 'colors', items: [ 'TextColor', 'BGColor' ] },
+            { name: 'tools', items: [ 'Maximize', 'ShowBlocks' ] }
+        ],
+        filebrowserUploadUrl: '<?= base_url("admin/upload_editor_image") ?>',
+        filebrowserUploadMethod: 'form',
+        allowedContent: true
+    });
+}
+
 function autoGenerateSlug(title) {
     var slugInput = document.getElementById('blog_slug');
     if (!<?= $blog ? 'true' : 'false' ?> || !slugInput.value) {
