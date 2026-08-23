@@ -36,6 +36,11 @@
                         <i class="fa-solid fa-building me-2 text-success"></i>Company & Contact Info
                     </button>
                 </li>
+                <li class="nav-item">
+                    <button class="nav-link fw-bold text-dark" id="migration-tab" data-bs-toggle="tab" data-bs-target="#migration-pane">
+                        <i class="fa-solid fa-database me-2 text-info"></i>Database Sync & Migration
+                    </button>
+                </li>
             </ul>
         </div>
 
@@ -191,6 +196,31 @@
                             <i class="fa-solid fa-floppy-disk me-2"></i>Save Company Info
                         </button>
                     </form>
+                </div>
+
+                <!-- Database Migration & Schema Sync Tab -->
+                <div class="tab-pane fade" id="migration-pane">
+                    <h5 class="fw-bold text-dark mb-3">Database Auto-Migration & Schema Sync</h5>
+                    <p class="text-secondary small mb-4">Run automated database migrations, create missing tables, add new columns, and synchronize default settings across local and live production environments.</p>
+
+                    <div class="card bg-light border-0 p-4 mb-4" style="border-radius: 12px;">
+                        <h6 class="fw-bold text-dark mb-2"><i class="fa-solid fa-link text-primary me-2"></i>Direct Migration URL</h6>
+                        <p class="small text-muted mb-2">Whenever you deploy code to your live server via Git, you can run database updates instantly by visiting this URL in your browser:</p>
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control font-monospace bg-white" readonly value="<?= base_url('migrate?key=droptaxi2026') ?>">
+                            <a href="<?= base_url('migrate?key=droptaxi2026') ?>" target="_blank" class="btn btn-outline-primary fw-semibold">
+                                <i class="fa-solid fa-arrow-up-right-from-square me-1"></i> Open URL
+                            </a>
+                        </div>
+                        <div class="small text-secondary">
+                            <i class="fa-solid fa-shield-halved text-success me-1"></i>
+                            <strong>Protected:</strong> Requires Admin Login or the secret key <code>key=droptaxi2026</code>.
+                        </div>
+                    </div>
+
+                    <a href="<?= base_url('migrate') ?>" target="_blank" class="btn btn-info px-4 py-2 font-weight-bold text-white">
+                        <i class="fa-solid fa-rotate me-2"></i>Run Database Migration & Sync Now
+                    </a>
                 </div>
 
             </div>

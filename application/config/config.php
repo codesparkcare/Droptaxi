@@ -387,7 +387,10 @@ $config['encryption_key'] = '';
 */
 $session_save_dir = APPPATH . 'cache/sessions';
 if (!is_dir($session_save_dir)) {
-    @mkdir($session_save_dir, 0700, TRUE);
+    @mkdir($session_save_dir, 0777, TRUE);
+}
+if (is_dir($session_save_dir) && !is_writable($session_save_dir)) {
+    @chmod($session_save_dir, 0777);
 }
 
 $config['sess_driver'] = 'files';
