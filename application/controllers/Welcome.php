@@ -13,12 +13,14 @@ class Welcome extends CI_Controller {
 		$this->load->model('Enquiry_model');
 		$this->load->model('Coupon_model');
 		$this->load->model('Customer_model');
+		$this->load->model('Blog_model');
 	}
 
 	public function index()
 	{
-		$data['vehicles'] = $this->Vehicle_model->get_all_vehicles(true);
-		$data['settings'] = $this->Setting_model->get_all_settings();
+		$data['vehicles']     = $this->Vehicle_model->get_all_vehicles(true);
+		$data['settings']     = $this->Setting_model->get_all_settings();
+		$data['recent_blogs'] = $this->Blog_model->get_recent_blogs(3);
 		$this->load->view('home', $data);
 	}
 

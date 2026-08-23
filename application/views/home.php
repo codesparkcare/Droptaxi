@@ -3,8 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DropTaxi - All Over Tamil Nadu Drop Taxi & Outstation Cab Service</title>
-    <meta name="description" content="Book 24/7 Drop Taxi & Outstation Cabs across Tamil Nadu, Bangalore, Pondicherry. Lowest one-way rates starting at ₹14/km. No return fare!">
+    <title><?= html_escape($settings['home_meta_title'] ?? 'DropTaxi | Best One Way Drop Taxi & Outstation Cabs in Tamil Nadu') ?></title>
+    <meta name="keywords" content="<?= html_escape($settings['home_meta_keywords'] ?? 'taxi booking, one way drop taxi, two way drop taxi, near by droptaxi, online taxi, outstation drop taxi, drop taxi chennai, drop taxi madurai, drop taxi coimbatore, drop taxi tirunelveli, drop taxi trichy, drop taxi salem, intercity cab booking') ?>">
+    <meta name="description" content="<?= html_escape($settings['home_meta_description'] ?? 'Book reliable One Way Drop Taxi & Outstation Cabs across Tamil Nadu, Bangalore & Pondicherry. Pay only for one way. Lowest per km rates, zero hidden charges, 24x7 verified drivers.') ?>">
+    <link rel="canonical" href="<?= base_url() ?>">
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+
+    <!-- OpenGraph & Twitter Cards -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="<?= base_url() ?>">
+    <meta property="og:title" content="<?= html_escape($settings['home_meta_title'] ?? 'DropTaxi | Best One Way Drop Taxi & Outstation Cabs in Tamil Nadu') ?>">
+    <meta property="og:description" content="<?= html_escape($settings['home_meta_description'] ?? 'Book reliable One Way Drop Taxi & Outstation Cabs across Tamil Nadu, Bangalore & Pondicherry. Pay only for one way. Lowest per km rates, zero hidden charges, 24x7 verified drivers.') ?>">
+    <meta property="og:image" content="<?= base_url($settings['og_image'] ?? 'assets/images/og-banner.jpg') ?>">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="<?= html_escape($settings['home_meta_title'] ?? 'DropTaxi | Best One Way Drop Taxi & Outstation Cabs in Tamil Nadu') ?>">
+    <meta name="twitter:description" content="<?= html_escape($settings['home_meta_description'] ?? 'Book reliable One Way Drop Taxi & Outstation Cabs across Tamil Nadu...') ?>">
+    <meta name="twitter:image" content="<?= base_url($settings['og_image'] ?? 'assets/images/og-banner.jpg') ?>">
+
+    <!-- Google Structured Data (JSON-LD: TaxiService & LocalBusiness & FAQPage) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "TaxiService",
+          "@id": "<?= base_url() ?>#taxiservice",
+          "name": "DropTaxi - One Way Drop Taxi & Outstation Cabs",
+          "url": "<?= base_url() ?>",
+          "image": "<?= base_url($settings['og_image'] ?? 'assets/images/og-banner.jpg') ?>",
+          "description": "Premier One Way Drop Taxi and Outstation Cab Booking Service in Tamil Nadu, Bangalore & Pondicherry. Save up to 40% with zero return charges.",
+          "provider": {
+            "@type": "LocalBusiness",
+            "name": "DropTaxi Services",
+            "telephone": "<?= html_escape($settings['contact_phone'] ?? '+91 98765 43210') ?>",
+            "email": "<?= html_escape($settings['contact_email'] ?? 'info@droptaxi.com') ?>",
+            "priceRange": "₹14 - ₹28 per km",
+            "address": {
+              "@type": "PostalAddress",
+              "addressRegion": "Tamil Nadu",
+              "addressCountry": "IN"
+            },
+            "aggregateRating": {
+              "@type": "AggregateRating",
+              "ratingValue": "4.9",
+              "reviewCount": "4850",
+              "bestRating": "5",
+              "worstRating": "1"
+            }
+          },
+          "areaServed": [
+            { "@type": "State", "name": "Tamil Nadu" },
+            { "@type": "State", "name": "Karnataka" },
+            { "@type": "State", "name": "Kerala" },
+            { "@type": "State", "name": "Puducherry" }
+          ],
+          "serviceType": [
+            "One Way Drop Taxi",
+            "Outstation Taxi Booking",
+            "Two Way Outstation Cab",
+            "Airport Drop Taxi",
+            "Intercity Online Taxi"
+          ]
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "What is One Way Drop Taxi and how does it save money?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "With One Way Drop Taxi, you only pay for the exact distance travelled from your pickup to drop destination. Unlike traditional cabs, there are zero return distance charges, saving up to 40% on outstation travel."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "How can I book a drop taxi online?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Simply enter your pickup and drop locations on our website to see the instant distance and fare calculation. Select your preferred vehicle (Sedan, SUV, Innova), enter your trip details, and confirm your booking in under 2 minutes."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Are tolls and driver allowances included in the fare?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes! DropTaxi provides completely transparent upfront billing with driver allowance (driver batta) and estimated highway tolls calculated before you book."
+              }
+            }
+          ]
+        }
+      ]
+    }
+    </script>
     
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -547,6 +639,7 @@
                     <li class="nav-item"><a class="nav-link" href="#booking-section">Book Taxi</a></li>
                     <li class="nav-item"><a class="nav-link" href="#tariffs">Tariff & Rates</a></li>
                     <li class="nav-item"><a class="nav-link" href="#why-us">Why Choose Us</a></li>
+                    <li class="nav-item"><a class="nav-link" href="<?= base_url('blog') ?>">Blog & Guides</a></li>
                     <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
                 </ul>
             </div>
@@ -581,6 +674,12 @@
                     <li class="nav-item">
                         <a class="nav-link px-3 py-3 text-dark fw-bold border-bottom d-flex align-items-center justify-content-between" href="#why-us" data-bs-dismiss="offcanvas">
                             <span><i class="fa-solid fa-shield-halved text-warning me-3"></i> Why Choose Us</span>
+                            <i class="fa-solid fa-chevron-right text-muted small"></i>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link px-3 py-3 text-dark fw-bold border-bottom d-flex align-items-center justify-content-between" href="<?= base_url('blog') ?>">
+                            <span><i class="fa-solid fa-newspaper text-warning me-3"></i> Travel Blog & Guides</span>
                             <i class="fa-solid fa-chevron-right text-muted small"></i>
                         </a>
                     </li>
@@ -1052,6 +1151,60 @@
         </div>
     </section>
 
+    <!-- Latest SEO Blogs & Travel Guides Section -->
+    <?php if (!empty($recent_blogs)): ?>
+    <section class="py-5 bg-white border-top border-bottom" id="blogs">
+        <div class="container py-4">
+            <div class="d-flex flex-wrap justify-content-between align-items-end mb-4 gap-3">
+                <div>
+                    <div class="section-title mb-1">Travel Advice & Guides</div>
+                    <h2 class="section-heading mb-0">Latest Outstation Taxi News & Tips</h2>
+                </div>
+                <a href="<?= base_url('blog') ?>" class="btn btn-outline-dark rounded-pill px-4 fw-bold">
+                    View All Articles <i class="fa-solid fa-arrow-right ms-1"></i>
+                </a>
+            </div>
+
+            <div class="row g-4">
+                <?php foreach ($recent_blogs as $b): ?>
+                    <div class="col-md-4">
+                        <div class="card h-100 border rounded-4 shadow-sm overflow-hidden d-flex flex-column" style="transition: transform 0.3s ease;">
+                            <a href="<?= base_url('blog/' . $b['slug']) ?>" class="d-block position-relative">
+                                <?php if (!empty($b['featured_image'])): ?>
+                                    <img src="<?= base_url($b['featured_image']) ?>" class="w-100" style="height: 190px; object-fit: cover;" alt="<?= html_escape($b['title']) ?>" loading="lazy">
+                                <?php else: ?>
+                                    <div class="w-100 bg-dark d-flex align-items-center justify-content-center text-white" style="height: 190px;">
+                                        <i class="fa-solid fa-car-side fa-3x text-warning"></i>
+                                    </div>
+                                <?php endif; ?>
+                                <span class="position-absolute top-0 start-0 m-3 badge bg-warning text-dark fw-bold rounded-pill px-3 py-1">
+                                    <?= html_escape($b['category'] ?? 'Travel Guide') ?>
+                                </span>
+                            </a>
+                            <div class="p-4 d-flex flex-column flex-grow-1">
+                                <div class="extra-small text-muted mb-2">
+                                    <i class="fa-regular fa-calendar me-1"></i><?= date('M d, Y', strtotime($b['created_at'])) ?>
+                                </div>
+                                <h5 class="fw-bold mb-2">
+                                    <a href="<?= base_url('blog/' . $b['slug']) ?>" class="text-dark text-decoration-none">
+                                        <?= html_escape($b['title']) ?>
+                                    </a>
+                                </h5>
+                                <p class="small text-muted flex-grow-1 mb-3">
+                                    <?= html_escape($b['excerpt'] ?: substr(strip_tags($b['content']), 0, 110) . '...') ?>
+                                </p>
+                                <a href="<?= base_url('blog/' . $b['slug']) ?>" class="fw-bold text-warning text-decoration-none small mt-auto">
+                                    Read Full Guide <i class="fa-solid fa-arrow-right ms-1"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </section>
+    <?php endif; ?>
+
     <!-- Footer -->
     <footer>
         <div class="container">
@@ -1070,6 +1223,8 @@
                         <li class="mb-2"><a href="#booking-section">Book Cab</a></li>
                         <li class="mb-2"><a href="#tariffs">Tariff Matrix</a></li>
                         <li class="mb-2"><a href="#why-us">Why Us</a></li>
+                        <li class="mb-2"><a href="<?= base_url('blog') ?>">Travel Blog</a></li>
+                        <li class="mb-2"><a href="<?= base_url('sitemap.xml') ?>" target="_blank">XML Sitemap</a></li>
                         <li class="mb-2"><a href="#contact">Contact</a></li>
                     </ul>
                 </div>

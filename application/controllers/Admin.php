@@ -15,6 +15,7 @@ class Admin extends CI_Controller {
 		$this->load->model('Coupon_model');
 		$this->load->model('Customer_model');
 		$this->load->model('Driver_model');
+		$this->load->model('Blog_model');
 	}
 
 	private function check_auth() {
@@ -402,5 +403,143 @@ class Admin extends CI_Controller {
 			$this->session->set_flashdata('success', 'Driver verification status updated!');
 		}
 		redirect('admin/drivers');
+	}
+
+	// -------------------------------------------------------------
+	// BLOG & SEO MANAGEMENT
+	// -------------------------------------------------------------
+
+	public function blogs() {
+		$this->check_auth();
+		$data['title'] = 'Blog & SEO Articles';
+		$data['blogs'] = $this->Blog_model->get_all_blogs();
+
+		$this->load->view('admin/layout/header', $data);
+		$this->load->view('admin/layout/sidebar', $data);
+		$this->load->view('admin/blogs/index', $data);
+		$this->load->view('admin/layout/footer');
+	}
+
+	public function add_blog() {
+		$this->check_auth();
+		$data['title'] = 'Add New SEO Blog Post';
+		$data['blog']  = null;
+
+		if ($this->input->post()) {
+			$this->handle_save_blog();
+			return;
+		}
+
+		$this->load->view('admin/layout/header', $data);
+		$this->load->view('admin/layout/sidebar', $data);
+		$this->load->view('admin/blogs/form', $data);
+		$this->load->view('admin/layout/footer');
+	}
+
+	public function edit_blog($id = null) {
+		$this->check_auth();
+		if (empty($id)) redirect('admin/blogs');
+
+		$blog = $this->Blog_model->get_blog_by_id($id);
+		if (!$blog) {
+			$this->session->set_flashdata('error', 'Blog post not found.');
+			redirect('admin/blogs');
+		}
+
+		$data['title'] = 'Edit Blog Post: ' . $blog['title'];
+		$data['blog']  = $blog;
+
+		if ($this->input->post()) {
+			$this->handle_save_blog($id);
+			return;
+		}
+
+		$this->load->view('admin/layout/header', $data);
+		$this->load->view('admin/layout/sidebar', $data);
+		$this->load->view('admin/blogs/form', $data);
+		$this->load->view('admin/layout/footer');
+	}
+
+	private function handle_save_blog($id = null) {
+		$title             = trim($this->input->post('title'));
+		$slug              = trim($this->input->post('slug'));
+		$category          = trim($this->input->post('category')) ?: 'Travel Guide';
+		$author            = trim($this->input->post('author')) ?: 'DropTaxi Editorial';
+		$excerpt           = trim($this->input->post('excerpt'));
+		$content           = $this->input->post('content');
+		$meta_title        = trim($this->input->post('meta_title')) ?: $title;
+		$meta_keywords     = trim($this->input->post('meta_keywords'));
+		$meta_description  = trim($this->input->post('meta_description')) ?: $excerpt;
+		$status            = $this->input->post('status') === 'draft' ? 'draft' : 'published';
+
+		if (empty($title) || empty($content)) {
+			$this->session->set_flashdata('error', 'Title and Content are required fields.');
+			redirect($id ? 'admin/edit_blog/' . $id : 'admin/add_blog');
+			return;
+		}
+
+		$blog_data = array(
+			'title'            => $title,
+			'slug'             => $slug,
+			'category'         => $category,
+			'author'           => $author,
+			'excerpt'          => $excerpt,
+			'content'          => $content,
+			'meta_title'       => $meta_title,
+			'meta_keywords'    => $meta_keywords,
+			'meta_description' => $meta_description,
+			'status'           => $status,
+			'published_at'     => ($status === 'published') ? date('Y-m-d H:i:s') : null
+		);
+
+		// Handle Featured Image Upload
+		if (!empty($_FILES['featured_image']['name'])) {
+			$config['upload_path']   = FCPATH . 'uploads/blogs/';
+			$config['allowed_types'] = 'jpg|jpeg|png|webp|svg';
+			$config['max_size']      = 4096;
+			$config['encrypt_name']  = TRUE;
+
+			if (!is_dir($config['upload_path'])) {
+				@mkdir($config['upload_path'], 0777, TRUE);
+			}
+
+			$this->load->library('upload', $config);
+			if ($this->upload->do_upload('featured_image')) {
+				$upload_data = $this->upload->data();
+				$blog_data['featured_image'] = 'uploads/blogs/' . $upload_data['file_name'];
+			}
+		}
+
+		if ($id) {
+			$this->Blog_model->update_blog($id, $blog_data);
+			$this->session->set_flashdata('success', 'Blog article updated successfully!');
+		} else {
+			$new_id = $this->Blog_model->create_blog($blog_data);
+			$this->session->set_flashdata('success', 'New blog article published successfully!');
+		}
+
+		redirect('admin/blogs');
+	}
+
+	public function delete_blog($id = null) {
+		$this->check_auth();
+		if ($id) {
+			$this->Blog_model->delete_blog($id);
+			$this->session->set_flashdata('success', 'Blog post deleted successfully.');
+		}
+		redirect('admin/blogs');
+	}
+
+	public function toggle_blog_status($id = null) {
+		$this->check_auth();
+		if ($id) {
+			$blog = $this->Blog_model->get_blog_by_id($id);
+			if ($blog) {
+				$new_status = ($blog['status'] === 'published') ? 'draft' : 'published';
+				$this->Blog_model->update_blog($id, array('status' => $new_status));
+				$this->session->set_flashdata('success', 'Blog status changed to ' . ucfirst($new_status));
+			}
+		}
+		redirect('admin/blogs');
 	}
 }

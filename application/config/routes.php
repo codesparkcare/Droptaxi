@@ -52,3 +52,9 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 $route['default_controller'] = 'welcome';
 $route['404_override'] = '';
 $route['translate_uri_dashes'] = FALSE;
+
+// SEO & Sitemap Routes
+$route['sitemap\.xml'] = 'sitemap/index';
+$route['sitemap']      = 'sitemap/index';
+$route['blog']         = 'blog/index';
+$route['blog/(:any)']  = 'blog/detail/$1';

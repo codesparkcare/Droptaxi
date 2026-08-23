@@ -239,6 +239,28 @@ class Migrate extends CI_Controller {
                 `updated_at` datetime NOT NULL,
                 PRIMARY KEY (`id`),
                 UNIQUE KEY `setting_key` (`setting_key`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;",
+
+            'blogs' => "CREATE TABLE IF NOT EXISTS `blogs` (
+                `id` int(11) NOT NULL AUTO_INCREMENT,
+                `title` varchar(255) NOT NULL,
+                `slug` varchar(255) NOT NULL,
+                `excerpt` text DEFAULT NULL,
+                `content` longtext NOT NULL,
+                `featured_image` varchar(255) DEFAULT NULL,
+                `category` varchar(100) DEFAULT 'Travel Guide',
+                `author` varchar(100) DEFAULT 'DropTaxi Editorial',
+                `meta_title` varchar(255) DEFAULT NULL,
+                `meta_keywords` text DEFAULT NULL,
+                `meta_description` text DEFAULT NULL,
+                `views` int(11) NOT NULL DEFAULT 0,
+                `status` enum('published','draft') NOT NULL DEFAULT 'published',
+                `published_at` datetime DEFAULT NULL,
+                `created_at` datetime NOT NULL,
+                `updated_at` datetime NOT NULL,
+                PRIMARY KEY (`id`),
+                UNIQUE KEY `slug` (`slug`),
+                KEY `status` (`status`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;"
         );
 
@@ -248,7 +270,7 @@ class Migrate extends CI_Controller {
             $created_count++;
         }
 
-        return "Verified & synced " . count($tables) . " core tables (admins, customers, drivers, bookings, vehicles, coupons, enquiries, settings).";
+        return "Verified & synced " . count($tables) . " core tables (admins, customers, drivers, bookings, vehicles, coupons, enquiries, settings, blogs).";
     }
 
     private function verify_columns()
@@ -310,18 +332,22 @@ class Migrate extends CI_Controller {
     private function verify_settings()
     {
         $default_settings = array(
-            'site_title'         => 'DropTaxi - All Over Tamil Nadu Drop Taxi Service',
-            'contact_phone'      => '+91 98765 43210',
-            'contact_email'      => 'info@droptaxi.com',
-            'whatsapp_number'    => '919876543210',
-            'google_map_key'     => 'AIzaSyDEO3zPEcZiGQ2zM5qcDvPqLbHgg9WFPbQ',
-            'razorpay_enabled'   => '1',
-            'razorpay_key_id'    => 'rzp_test_samplekey123',
-            'razorpay_key_secret'=> 'sample_secret_key_123',
-            'smtp_host'          => 'smtp.gmail.com',
-            'smtp_port'          => '587',
-            'smtp_crypto'        => 'tls',
-            'smtp_from_name'     => 'DropTaxi Service'
+            'site_title'             => 'DropTaxi - #1 One Way Drop Taxi & Outstation Cabs in Tamil Nadu',
+            'contact_phone'          => '+91 98765 43210',
+            'contact_email'          => 'info@droptaxi.com',
+            'whatsapp_number'        => '919876543210',
+            'google_map_key'         => 'AIzaSyDEO3zPEcZiGQ2zM5qcDvPqLbHgg9WFPbQ',
+            'home_meta_title'        => 'DropTaxi | Best One Way Drop Taxi & Outstation Cabs in Tamil Nadu',
+            'home_meta_keywords'     => 'taxi booking, one way drop taxi, two way drop taxi, near by droptaxi, online taxi, outstation drop taxi, drop taxi chennai, drop taxi madurai, drop taxi coimbatore, drop taxi tirunelveli, drop taxi trichy, drop taxi salem, intercity cab booking',
+            'home_meta_description'  => 'Book reliable One Way Drop Taxi & Outstation Cabs across Tamil Nadu, Bangalore & Pondicherry. Pay only for one way. Lowest per km rates, zero hidden charges, 24x7 verified drivers.',
+            'og_image'               => 'assets/images/og-banner.jpg',
+            'razorpay_enabled'       => '1',
+            'razorpay_key_id'        => 'rzp_test_samplekey123',
+            'razorpay_key_secret'    => 'sample_secret_key_123',
+            'smtp_host'              => 'smtp.gmail.com',
+            'smtp_port'              => '587',
+            'smtp_crypto'            => 'tls',
+            'smtp_from_name'         => 'DropTaxi Service'
         );
 
         $updated_keys = 0;
@@ -333,7 +359,7 @@ class Migrate extends CI_Controller {
             }
         }
 
-        return "Verified system settings. Active Google Maps Key is: " . substr($this->Setting_model->get_setting('google_map_key', ''), 0, 12) . "...";
+        return "Verified system SEO & gateway settings. Active Google Maps Key is: " . substr($this->Setting_model->get_setting('google_map_key', ''), 0, 12) . "...";
     }
 
     private function verify_seed_data()
@@ -391,7 +417,66 @@ class Migrate extends CI_Controller {
             }
         }
 
-        return "Verified admin account & vehicle tariff configurations.";
+        // 3. Ensure SEO Blog posts exist
+        $blog_count = $this->db->count_all('blogs');
+        if ($blog_count === 0) {
+            $sample_blogs = array(
+                array(
+                    'title'             => 'Top Benefits of One Way Drop Taxi in Tamil Nadu: Save 40% on Outstation Travel',
+                    'slug'              => 'benefits-of-one-way-drop-taxi-tamil-nadu',
+                    'category'          => 'Travel Guide',
+                    'author'            => 'DropTaxi Editorial',
+                    'excerpt'           => 'Discover why one way drop taxi booking is revolutionizing outstation travel in Tamil Nadu. Learn how to pay only for the distance you travel with zero return fare.',
+                    'content'           => '<h2>Why Pay Double When You Only Need One Way?</h2><p>Traditional outstation taxi operators commonly charge round-trip fares even when you only need to travel from one city to another. With <strong>DropTaxi One Way service</strong>, you only pay for the exact distance travelled, saving up to 40% on your travel budget.</p><h3>Key Advantages of DropTaxi:</h3><ul><li><strong>Pay Only One-Way:</strong> Zero return kilometer charges for intercity trips.</li><li><strong>Doorstep Pickup & Drop:</strong> Convenient pickup from any neighborhood in Chennai, Madurai, Coimbatore, Tirunelveli, and Trichy.</li><li><strong>Transparent Billing:</strong> Pre-calculated fares with toll estimates and driver allowance included upfront.</li><li><strong>Well-Maintained AC Fleet:</strong> Clean Sedans (Dzire, Etios) and SUVs (Ertiga, Innova) with verified professional chauffeurs.</li></ul><p>Ready to experience hassle-free outstation travel? Book your one way taxi online now!</p>',
+                    'meta_title'        => 'Benefits of One Way Drop Taxi in Tamil Nadu | Save 40% on Taxi Booking',
+                    'meta_keywords'     => 'one way drop taxi, outstation drop taxi, drop taxi tamil nadu, taxi booking online, chennai to madurai drop taxi, coimbatore drop taxi',
+                    'meta_description'  => 'Save up to 40% on outstation travel in Tamil Nadu with DropTaxi one-way drop taxi service. Pay only for one way with transparent per-km rates and verified drivers.',
+                    'views'             => 142,
+                    'status'            => 'published',
+                    'published_at'      => date('Y-m-d H:i:s', strtotime('-5 days')),
+                    'created_at'        => date('Y-m-d H:i:s', strtotime('-5 days')),
+                    'updated_at'        => date('Y-m-d H:i:s')
+                ),
+                array(
+                    'title'             => 'How to Book Online Taxi in Tamil Nadu: Complete Step-by-Step Guide',
+                    'slug'              => 'how-to-book-online-taxi-tamil-nadu',
+                    'category'          => 'Booking Tips',
+                    'author'            => 'DropTaxi Team',
+                    'excerpt'           => 'A simple step-by-step tutorial on booking one-way and round-trip outstation cabs online with instant fare calculation and immediate confirmation.',
+                    'content'           => '<h2>Easy 3-Step Online Taxi Booking</h2><p>Booking a drop taxi has never been easier. Follow these simple steps to confirm your cab in under 2 minutes:</p><ol><li><strong>Enter Pickup & Drop Locations:</strong> Type your area name or city to instantly see the driving distance and estimated tolls.</li><li><strong>Choose Your Vehicle:</strong> Select from affordable Sedans, spacious 6-seater SUVs, luxury Innova Crysta, or 12-seater Tempo Travellers.</li><li><strong>Instant Confirmation:</strong> Receive your booking ID, driver assignment, and live SMS updates immediately.</li></ol><h3>Safety First with Verified Drivers</h3><p>Every driver undergoes strict background verification and vehicle safety audits, guaranteeing peace of mind on long highway journeys.</p>',
+                    'meta_title'        => 'How to Book Online Taxi in Tamil Nadu | Online Drop Taxi Booking Guide',
+                    'meta_keywords'     => 'online taxi, taxi booking, book cab online, drop taxi booking, outstation taxi booking tamil nadu, near by droptaxi',
+                    'meta_description'  => 'Step-by-step guide to online taxi booking in Tamil Nadu. Book one-way and round-trip outstation cabs in 3 easy steps with instant fare calculation.',
+                    'views'             => 98,
+                    'status'            => 'published',
+                    'published_at'      => date('Y-m-d H:i:s', strtotime('-3 days')),
+                    'created_at'        => date('Y-m-d H:i:s', strtotime('-3 days')),
+                    'updated_at'        => date('Y-m-d H:i:s')
+                ),
+                array(
+                    'title'             => 'Finding Nearby Drop Taxi & Outstation Cabs for Fast Highway Travel',
+                    'slug'              => 'finding-nearby-drop-taxi-outstation-cabs',
+                    'category'          => 'Travel Guide',
+                    'author'            => 'DropTaxi Editorial',
+                    'excerpt'           => 'Need a nearby drop taxi urgently? Here is how to find the closest verified outstation cab with 24x7 emergency and scheduled pickup across South India.',
+                    'content'           => '<h2>24x7 Nearby Outstation Cabs On Demand</h2><p>Whether you need an early morning airport transfer or an emergency one-way intercity cab, DropTaxi connects you with the nearest active chauffeur in your district.</p><h3>Coverage Across 38+ Districts:</h3><p>We serve all major highways and hubs including NH44, NH45, NH83 connecting Chennai, Madurai, Coimbatore, Salem, Tirunelveli, Trichy, Nagercoil, Tenkasi, and Bangalore.</p><p>Call our 24x7 helpline or book online for guaranteed on-time pickups!</p>',
+                    'meta_title'        => 'Nearby Drop Taxi & Outstation Cabs Across Tamil Nadu | 24x7 Taxi Booking',
+                    'meta_keywords'     => 'near by droptaxi, nearby taxi, outstation cabs near me, two way drop taxi, intercity drop taxi, emergency drop taxi',
+                    'meta_description'  => 'Find reliable nearby drop taxi and outstation cabs across Tamil Nadu. 24x7 fast pickup, transparent per-km billing, and AC vehicles.',
+                    'views'             => 85,
+                    'status'            => 'published',
+                    'published_at'      => date('Y-m-d H:i:s', strtotime('-1 days')),
+                    'created_at'        => date('Y-m-d H:i:s', strtotime('-1 days')),
+                    'updated_at'        => date('Y-m-d H:i:s')
+                )
+            );
+
+            foreach ($sample_blogs as $b) {
+                $this->db->insert('blogs', $b);
+            }
+        }
+
+        return "Verified admin account, vehicle tariffs, and SEO blog articles.";
     }
 
     private function render_migration_ui($logs)

@@ -45,10 +45,22 @@
             </a>
         </li>
 
+        <li class="menu-title">Marketing & SEO</li>
+        <li>
+            <a href="<?php echo base_url('admin/blogs'); ?>" class="<?= strpos(uri_string(), 'admin/blogs') !== false ? 'active' : '' ?>">
+                <i class="fa-solid fa-newspaper text-info"></i> Blog & SEO Posts
+            </a>
+        </li>
+        <li>
+            <a href="<?php echo base_url('sitemap.xml'); ?>" target="_blank">
+                <i class="fa-solid fa-sitemap text-warning"></i> View XML Sitemap
+            </a>
+        </li>
+
         <li class="menu-title">System & Gateway</li>
         <li>
             <a href="<?php echo base_url('admin/settings'); ?>" class="<?= uri_string() == 'admin/settings' ? 'active' : '' ?>">
-                <i class="fa-solid fa-gear"></i> SMTP & Razorpay Settings
+                <i class="fa-solid fa-gear"></i> SEO & Gateway Settings
             </a>
         </li>
         <li>

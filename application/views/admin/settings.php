@@ -32,6 +32,11 @@
                     </button>
                 </li>
                 <li class="nav-item">
+                    <button class="nav-link fw-bold text-dark" id="seo-tab" data-bs-toggle="tab" data-bs-target="#seo-pane">
+                        <i class="fa-brands fa-google me-2 text-primary"></i>SEO & Meta Tags
+                    </button>
+                </li>
+                <li class="nav-item">
                     <button class="nav-link fw-bold text-dark" id="general-tab" data-bs-toggle="tab" data-bs-target="#general-pane">
                         <i class="fa-solid fa-building me-2 text-success"></i>Company & Contact Info
                     </button>
@@ -166,6 +171,77 @@
                         </button>
                     </form>
                 </div>
+
+                <!-- SEO & Meta Tags Tab -->
+                <div class="tab-pane fade" id="seo-pane">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h5 class="fw-bold text-dark mb-0"><i class="fa-brands fa-google text-primary me-2"></i>Homepage & Site-Wide SEO Meta Tags</h5>
+                        <span class="badge bg-warning text-dark"><i class="fa-solid fa-ranking-star me-1"></i>Rank #1 on Search</span>
+                    </div>
+                    <p class="text-secondary small mb-4">Set targeted meta titles, keywords, and descriptions for your homepage to capture search traffic for terms like <em>"taxi booking", "one way drop taxi", "two way drop taxi", "near by droptaxi", "online taxi"</em>.</p>
+
+                    <form action="<?= base_url('admin/save_settings') ?>" method="POST">
+                        <div class="row g-3 mb-4">
+                            <!-- Live Google Snippet Preview -->
+                            <div class="col-12">
+                                <div class="p-3 bg-light rounded-3 border">
+                                    <div class="extra-small text-muted mb-1"><i class="fa-solid fa-magnifying-glass me-1"></i>Google Search Result Preview</div>
+                                    <div class="fw-bold text-primary fs-6" id="home_preview_title"><?= html_escape($settings['home_meta_title'] ?? 'DropTaxi | Best One Way Drop Taxi & Outstation Cabs in Tamil Nadu') ?></div>
+                                    <div class="text-success extra-small mb-1 font-monospace"><?= base_url() ?></div>
+                                    <div class="text-secondary small" id="home_preview_desc"><?= html_escape($settings['home_meta_description'] ?? 'Book reliable One Way Drop Taxi & Outstation Cabs across Tamil Nadu, Bangalore & Pondicherry. Pay only for one way. Lowest per km rates, zero hidden charges.') ?></div>
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between">
+                                    <label class="form-label small fw-semibold">Homepage Meta Title (Browser & Google Search Title)</label>
+                                    <span class="extra-small text-muted" id="home_title_counter">0 / 60 chars</span>
+                                </div>
+                                <input type="text" class="form-control" name="home_meta_title" id="home_meta_title_input" value="<?= html_escape($settings['home_meta_title'] ?? 'DropTaxi | Best One Way Drop Taxi & Outstation Cabs in Tamil Nadu') ?>" placeholder="DropTaxi | Best One Way Drop Taxi & Outstation Cabs in Tamil Nadu" oninput="updateHomePreview()">
+                                <div class="form-text extra-small text-muted">Keep between 50-60 characters for optimal visibility on Google.</div>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label small fw-semibold">Target SEO Keywords (Comma Separated)</label>
+                                <textarea class="form-control" name="home_meta_keywords" rows="3" placeholder="taxi booking, one way drop taxi, two way drop taxi, near by droptaxi, online taxi, outstation drop taxi, drop taxi chennai, drop taxi madurai, drop taxi coimbatore"><?= html_escape($settings['home_meta_keywords'] ?? 'taxi booking, one way drop taxi, two way drop taxi, near by droptaxi, online taxi, outstation drop taxi, drop taxi chennai, drop taxi madurai, drop taxi coimbatore, drop taxi tirunelveli, drop taxi trichy, drop taxi salem, intercity cab booking') ?></textarea>
+                                <div class="form-text extra-small text-muted">Core search phrases targeted by users searching for cabs in Tamil Nadu and South India.</div>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between">
+                                    <label class="form-label small fw-semibold">Homepage Meta Description</label>
+                                    <span class="extra-small text-muted" id="home_desc_counter">0 / 160 chars</span>
+                                </div>
+                                <textarea class="form-control" name="home_meta_description" id="home_meta_desc_input" rows="3" placeholder="Book reliable One Way Drop Taxi & Outstation Cabs across Tamil Nadu, Bangalore & Pondicherry. Pay only for one way. Lowest per km rates, zero hidden charges, 24x7 verified drivers." oninput="updateHomePreview()"><?= html_escape($settings['home_meta_description'] ?? 'Book reliable One Way Drop Taxi & Outstation Cabs across Tamil Nadu, Bangalore & Pondicherry. Pay only for one way. Lowest per km rates, zero hidden charges, 24x7 verified drivers.') ?></textarea>
+                                <div class="form-text extra-small text-muted">Keep between 140-160 characters with clear call-to-action to maximize click-through rate.</div>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label small fw-semibold">Social Share Banner Image URL (OpenGraph / WhatsApp / Twitter)</label>
+                                <input type="text" class="form-control font-monospace" name="og_image" value="<?= html_escape($settings['og_image'] ?? 'assets/images/og-banner.jpg') ?>" placeholder="assets/images/og-banner.jpg">
+                                <div class="form-text extra-small text-muted">Image displayed when sharing your website URL on WhatsApp, Facebook, LinkedIn, or Twitter.</div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary px-4 py-2 font-weight-bold">
+                            <i class="fa-solid fa-floppy-disk me-2"></i>Save SEO Meta Tags
+                        </button>
+                    </form>
+                </div>
+
+                <script>
+                function updateHomePreview() {
+                    var title = document.getElementById('home_meta_title_input').value || 'DropTaxi | Best One Way Drop Taxi & Outstation Cabs in Tamil Nadu';
+                    var desc = document.getElementById('home_meta_desc_input').value || 'Book reliable One Way Drop Taxi & Outstation Cabs across Tamil Nadu...';
+                    document.getElementById('home_preview_title').innerText = title;
+                    document.getElementById('home_preview_desc').innerText = desc;
+                    document.getElementById('home_title_counter').innerText = document.getElementById('home_meta_title_input').value.length + ' / 60 chars';
+                    document.getElementById('home_desc_counter').innerText = document.getElementById('home_meta_desc_input').value.length + ' / 160 chars';
+                }
+                document.addEventListener('DOMContentLoaded', function() {
+                    updateHomePreview();
+                });
+                </script>
 
                 <!-- General Info Tab -->
                 <div class="tab-pane fade" id="general-pane">
