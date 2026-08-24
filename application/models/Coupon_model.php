@@ -15,6 +15,19 @@ class Coupon_model extends CI_Model {
         return $query->result_array();
     }
 
+    public function get_active_coupons()
+    {
+        $this->db->where('status', 'active');
+        $this->db->group_start();
+        $this->db->where('expiry_date >=', date('Y-m-d'));
+        $this->db->or_where('expiry_date IS NULL', null, false);
+        $this->db->or_where('expiry_date', '');
+        $this->db->group_end();
+        $this->db->order_by('id', 'DESC');
+        $query = $this->db->get('coupons');
+        return $query->result_array();
+    }
+
     public function get_coupon_by_code($code)
     {
         $this->db->where('UPPER(code)', strtoupper(trim($code)));

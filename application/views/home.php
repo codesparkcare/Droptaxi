@@ -680,6 +680,115 @@
         .mobile-bottom-nav-item.nav-tariff i {
             color: #f59e0b;
         }
+
+        /* Mobile & Tablet Offers / Coupon Slider Banner Styles */
+        .coupon-slider-wrapper {
+            margin-bottom: 16px;
+        }
+
+        .coupon-slider-container {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+            padding: 4px 2px 8px 2px;
+            scrollbar-width: none;
+        }
+
+        .coupon-slider-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .coupon-banner-card {
+            flex: 0 0 250px;
+            max-width: 82%;
+            scroll-snap-align: start;
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 1.5px dashed rgba(245, 158, 11, 0.55);
+            border-radius: 16px;
+            padding: 12px 14px;
+            color: #ffffff;
+            position: relative;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+            transition: all 0.25s ease;
+            cursor: pointer;
+            text-align: left;
+        }
+
+        .coupon-banner-card:hover, .coupon-banner-card:active {
+            transform: translateY(-2px);
+            border-color: var(--primary-yellow);
+            box-shadow: 0 8px 22px rgba(245, 158, 11, 0.25);
+        }
+
+        .coupon-banner-card.is-applied {
+            background: linear-gradient(135deg, #064e3b, #022c22);
+            border-color: #10b981;
+            border-style: solid;
+            box-shadow: 0 6px 18px rgba(16, 185, 129, 0.3);
+        }
+
+        .coupon-banner-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+
+        .coupon-code-pill {
+            background: rgba(245, 158, 11, 0.18);
+            color: var(--accent-gold);
+            border: 1px dashed rgba(245, 158, 11, 0.8);
+            font-family: monospace;
+            font-size: 0.85rem;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        .coupon-banner-card.is-applied .coupon-code-pill {
+            background: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+            border-color: #34d399;
+        }
+
+        .btn-apply-banner {
+            font-size: 0.72rem;
+            font-weight: 800;
+            padding: 3px 10px;
+            border-radius: 50px;
+            background: var(--primary-yellow);
+            color: #000;
+            border: none;
+            transition: all 0.2s ease;
+            line-height: 1.3;
+        }
+
+        .btn-apply-banner:hover {
+            background: var(--accent-gold);
+            transform: scale(1.04);
+        }
+
+        .coupon-banner-card.is-applied .btn-apply-banner {
+            background: #10b981;
+            color: #ffffff;
+        }
+
+        .coupon-banner-title {
+            font-size: 0.86rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 2px;
+        }
+
+        .coupon-banner-desc {
+            font-size: 0.72rem;
+            color: #94a3b8;
+            line-height: 1.25;
+            margin-bottom: 0;
+        }
     </style>
 </head>
 <body>
@@ -999,6 +1108,60 @@
                                 <?php endif; ?>
                             </div>
                             <input type="hidden" name="vehicle_type" id="vehicle_type" value="sedan">
+
+                            <!-- Mobile & Tablet Offers / Coupon Slider Banner -->
+                            <?php 
+                                $promo_coupons = !empty($coupons) ? $coupons : [
+                                    [
+                                        'code' => 'SAVE100',
+                                        'discount_type' => 'flat',
+                                        'discount_value' => 100,
+                                        'min_order_amount' => 1000
+                                    ],
+                                    [
+                                        'code' => 'WELCOME10',
+                                        'discount_type' => 'percent',
+                                        'discount_value' => 10,
+                                        'min_order_amount' => 500
+                                    ]
+                                ];
+                            ?>
+                            <?php if (!empty($promo_coupons)): ?>
+                            <div class="coupon-slider-wrapper d-block d-lg-none">
+                                <div class="d-flex align-items-center justify-content-between mb-1.5 px-1">
+                                    <span class="extra-small fw-bold text-uppercase text-secondary" style="letter-spacing: 0.5px; font-size: 0.75rem;">
+                                        <i class="fa-solid fa-fire text-danger me-1"></i> Special Offers & Discounts
+                                    </span>
+                                    <span class="extra-small text-muted" style="font-size: 0.7rem;"><i class="fa-solid fa-hand-pointer text-warning me-1"></i>Swipe & Tap to Apply</span>
+                                </div>
+                                <div class="coupon-slider-container">
+                                    <?php foreach($promo_coupons as $cp): ?>
+                                    <div class="coupon-banner-card" id="banner-card-<?= html_escape($cp['code']) ?>" onclick="applyCouponFromBanner('<?= html_escape($cp['code']) ?>')">
+                                        <div class="coupon-banner-top">
+                                            <span class="coupon-code-pill"><i class="fa-solid fa-ticket me-1"></i><?= html_escape($cp['code']) ?></span>
+                                            <button type="button" class="btn-apply-banner" id="btn-banner-<?= html_escape($cp['code']) ?>">
+                                                APPLY
+                                            </button>
+                                        </div>
+                                        <div class="coupon-banner-title">
+                                            <?php if ($cp['discount_type'] === 'flat'): ?>
+                                                Flat ₹<?= number_format($cp['discount_value'], 0) ?> OFF
+                                            <?php else: ?>
+                                                <?= number_format($cp['discount_value'], 0) ?>% Instant OFF
+                                            <?php endif; ?>
+                                        </div>
+                                        <p class="coupon-banner-desc">
+                                            <?php if (!empty($cp['min_order_amount']) && floatval($cp['min_order_amount']) > 0): ?>
+                                                On rides above ₹<?= number_format($cp['min_order_amount'], 0) ?>
+                                            <?php else: ?>
+                                                Valid on all outstation cab rides
+                                            <?php endif; ?>
+                                        </p>
+                                    </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
+                            <?php endif; ?>
 
                             <!-- Coupon Code Input Widget -->
                             <div class="mb-3">
@@ -2632,6 +2795,7 @@
                             couponAlert.innerText = '✓ ' + data.coupon_message;
                             couponAlert.classList.remove('d-none');
                         }
+                        syncCouponBannerState(data.coupon_code, true);
                     } else {
                         if (couponRow) couponRow.classList.add('d-none');
                         if (couponAlert && couponCode) {
@@ -2641,6 +2805,7 @@
                         } else if (couponAlert) {
                             couponAlert.classList.add('d-none');
                         }
+                        syncCouponBannerState(couponCode, false);
                     }
                 }
             });
@@ -2947,6 +3112,32 @@
             if (modalEl) {
                 var modal = new bootstrap.Modal(modalEl);
                 modal.show();
+            }
+        }
+
+        function applyCouponFromBanner(code) {
+            var input = document.getElementById('coupon_code');
+            if (input) {
+                input.value = code;
+                syncCouponBannerState(code, true);
+                calculateGoogleDistance();
+            }
+        }
+
+        function syncCouponBannerState(code, isApplied) {
+            document.querySelectorAll('.coupon-banner-card').forEach(function(card) {
+                card.classList.remove('is-applied');
+            });
+            document.querySelectorAll('.btn-apply-banner').forEach(function(btn) {
+                btn.innerText = 'APPLY';
+            });
+
+            if (isApplied && code) {
+                var cleanCode = code.toString().trim().toUpperCase();
+                var activeCard = document.getElementById('banner-card-' + cleanCode);
+                var activeBtn = document.getElementById('btn-banner-' + cleanCode);
+                if (activeCard) activeCard.classList.add('is-applied');
+                if (activeBtn) activeBtn.innerHTML = '<i class="fa-solid fa-check me-1"></i>APPLIED';
             }
         }
 

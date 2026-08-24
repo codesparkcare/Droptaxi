@@ -21,6 +21,7 @@ class Welcome extends CI_Controller {
 		$data['vehicles']     = $this->Vehicle_model->get_all_vehicles(true);
 		$data['settings']     = $this->Setting_model->get_all_settings();
 		$data['recent_blogs'] = $this->Blog_model->get_recent_blogs(3);
+		$data['coupons']      = $this->Coupon_model->get_active_coupons();
 		$this->load->view('home', $data);
 	}
 
