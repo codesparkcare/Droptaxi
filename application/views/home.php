@@ -212,27 +212,65 @@
 
         /* Mobile Header Actions Custom Styling */
         @media (max-width: 991.98px) {
-            .header-call-btn {
-                width: 38px;
-                height: 38px;
-                border-radius: 50% !important;
-                padding: 0 !important;
-                display: inline-flex !important;
-                align-items: center;
-                justify-content: center;
+            .main-navbar {
+                padding: 10px 0 !important;
             }
-            .header-icon-btn {
-                width: 38px;
-                height: 38px;
-                padding: 0 !important;
-                display: inline-flex !important;
-                align-items: center;
-                justify-content: center;
+
+            .main-navbar .container {
+                display: flex !important;
+                flex-wrap: nowrap !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+                gap: 8px;
             }
+
+            .navbar-brand {
+                margin-right: 0 !important;
+                flex-shrink: 0;
+            }
+
+            .navbar-brand .logo-badge {
+                width: 38px !important;
+                height: 38px !important;
+                font-size: 1.2rem !important;
+                border-radius: 10px !important;
+            }
+
+            .navbar-brand span {
+                font-size: 1.3rem !important;
+            }
+
+            #navbar-auth-container {
+                flex-shrink: 1;
+                min-width: 0;
+            }
+
             .btn-header-login {
-                font-size: 0.85rem !important;
-                padding: 6px 14px !important;
+                font-size: 0.8rem !important;
+                padding: 6px 12px !important;
                 border-radius: 50px !important;
+                max-width: 145px !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                gap: 4px;
+                white-space: nowrap !important;
+                overflow: hidden !important;
+            }
+
+            .btn-header-login .cust-name-text {
+                max-width: 85px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                display: inline-block;
+                vertical-align: middle;
+            }
+
+            .navbar-toggler {
+                padding: 4px 6px !important;
+                font-size: 1.1rem !important;
+                flex-shrink: 0;
+                margin-left: 2px !important;
             }
         }
 
@@ -816,17 +854,19 @@
             </a>
 
             <!-- Header Action Items (Visible in Header Bar) -->
-            <div class="d-flex align-items-center gap-1 gap-sm-2 order-lg-3 ms-auto me-2 me-lg-0">
+            <div class="d-flex align-items-center gap-1 gap-sm-2 order-lg-3 ms-auto me-1 me-lg-0">
                 <!-- Customer Login / Account Button (Placed near 3-line hamburger menu) -->
                 <div id="navbar-auth-container">
                     <?php $is_cust_logged = $this->session->userdata('customer_logged_in'); ?>
                     <?php if($is_cust_logged): ?>
                         <div class="dropdown">
                             <button class="btn btn-outline-warning rounded-pill px-2.5 px-md-3 py-1.5 py-md-2 dropdown-toggle font-weight-bold btn-header-login" type="button" data-bs-toggle="dropdown">
-                                <i class="fa-solid fa-user-circle me-1"></i> <span class="d-none d-sm-inline"><?= html_escape($this->session->userdata('customer_name')) ?></span><span class="d-inline d-sm-none">Account</span>
+                                <i class="fa-solid fa-user-circle me-1 flex-shrink-0"></i>
+                                <span class="cust-name-text"><?= html_escape($this->session->userdata('customer_name')) ?></span>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
                                 <li class="px-3 py-2 extra-small text-muted border-bottom">
+                                    <div><strong>Name:</strong> <?= html_escape($this->session->userdata('customer_name')) ?></div>
                                     <div><strong>Phone:</strong> <?= html_escape($this->session->userdata('customer_phone')) ?></div>
                                     <?php if($this->session->userdata('customer_email')): ?>
                                         <div><strong>Email:</strong> <?= html_escape($this->session->userdata('customer_email')) ?></div>
@@ -3008,24 +3048,26 @@
                     if (navAuth) {
                         navAuth.innerHTML = `
                             <div class="dropdown">
-                                <button class="btn btn-outline-warning rounded-pill px-3 py-2 dropdown-toggle font-weight-bold" type="button" data-bs-toggle="dropdown">
-                                    <i class="fa-solid fa-user-circle me-1"></i> ${escapeHtml(cust.name)}
+                                <button class="btn btn-outline-warning rounded-pill px-2.5 px-md-3 py-1.5 py-md-2 dropdown-toggle font-weight-bold btn-header-login" type="button" data-bs-toggle="dropdown">
+                                    <i class="fa-solid fa-user-circle me-1 flex-shrink-0"></i>
+                                    <span class="cust-name-text">${escapeHtml(cust.name)}</span>
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
                                     <li class="px-3 py-2 extra-small text-muted border-bottom">
+                                        <div><strong>Name:</strong> ${escapeHtml(cust.name)}</div>
                                         <div><strong>Phone:</strong> ${escapeHtml(cust.phone)}</div>
                                         ${cust.email ? `<div><strong>Email:</strong> ${escapeHtml(cust.email)}</div>` : ''}
                                     </li>
                                     <li><a class="dropdown-item py-2 text-danger" href="javascript:void(0)" onclick="customerLogout()"><i class="fa-solid fa-arrow-right-from-bracket me-2"></i> Sign Out</a></li>
                                 </ul>
                             </div>
-                            <a href="https://wa.me/<?= $settings['whatsapp_number'] ?? '919876543210' ?>" target="_blank" class="btn btn-outline-dark rounded-circle p-2" title="WhatsApp Us">
-                                <i class="fa-brands fa-whatsapp fs-5 text-success"></i>
-                            </a>
-                            <a href="tel:<?= $settings['contact_phone'] ?? '+919876543210' ?>" class="btn btn-brand-yellow">
-                                <i class="fa-solid fa-phone me-2"></i>Call Now
-                            </a>
                         `;
+                    }
+
+                    // Update mobile bottom bar account label
+                    var bottomAuthLabel = document.querySelector('.mobile-bottom-nav-item:last-child span');
+                    if (bottomAuthLabel) {
+                        bottomAuthLabel.innerText = 'Account';
                     }
 
                     // Restore draft booking form selections
