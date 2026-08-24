@@ -574,12 +574,118 @@
             font-size: 0.82rem;
             color: #d97706;
         }
+
+        /* Mobile & Tablet App Mode Custom Styles */
+        @media (max-width: 991.98px) {
+            body {
+                padding-bottom: 78px; /* Space for mobile bottom bar */
+                background-color: #0f172a;
+            }
+
+            .main-navbar {
+                padding: 10px 0;
+                background-color: #ffffff;
+            }
+
+            .hero-section {
+                padding: 14px 0 28px 0 !important;
+                background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%) !important;
+            }
+
+            .booking-card {
+                padding: 20px 15px !important;
+                border-radius: 22px !important;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35) !important;
+            }
+
+            .vehicle-select-card {
+                padding: 10px 6px !important;
+                border-radius: 12px !important;
+            }
+
+            .vehicle-select-card i {
+                font-size: 1.4rem !important;
+            }
+
+            .fare-estimate-box {
+                padding: 14px 14px !important;
+                border-radius: 14px !important;
+            }
+        }
+
+        /* Mobile App Bottom Navigation Bar */
+        .mobile-bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 64px;
+            background: #ffffff;
+            border-top: 1px solid #e2e8f0;
+            box-shadow: 0 -4px 25px rgba(15, 23, 42, 0.12);
+            z-index: 1040;
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            padding: 4px 6px;
+        }
+
+        .mobile-bottom-nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 4px 2px;
+            border-radius: 10px;
+            transition: all 0.2s ease;
+            background: none;
+            border: none;
+            cursor: pointer;
+            line-height: 1.2;
+        }
+
+        .mobile-bottom-nav-item i {
+            font-size: 1.22rem;
+            margin-bottom: 3px;
+            transition: all 0.2s ease;
+        }
+
+        .mobile-bottom-nav-item.active {
+            color: #d97706;
+            font-weight: 700;
+        }
+
+        .mobile-bottom-nav-item.active i {
+            color: var(--primary-yellow-hover);
+            transform: scale(1.1);
+        }
+
+        .mobile-bottom-nav-item:hover, .mobile-bottom-nav-item:focus {
+            color: var(--primary-yellow-hover);
+        }
+
+        .mobile-bottom-nav-item.nav-call i {
+            color: #ef4444;
+        }
+
+        .mobile-bottom-nav-item.nav-whatsapp i {
+            color: #22c55e;
+        }
+
+        .mobile-bottom-nav-item.nav-tariff i {
+            color: #f59e0b;
+        }
     </style>
 </head>
 <body>
 
-    <!-- Top Announcement Bar -->
-    <div class="top-announcement">
+    <!-- Top Announcement Bar (Desktop only) -->
+    <div class="top-announcement d-none d-lg-block">
         <div class="container d-flex justify-content-between align-items-center flex-wrap gap-2">
             <div>
                 <i class="fa-solid fa-headset me-2 text-warning"></i> 24x7 Customer Helpline: <a href="tel:<?= $settings['contact_phone'] ?? '+919876543210' ?>"><?= $settings['contact_phone'] ?? '+91 98765 43210' ?></a>
@@ -660,20 +766,14 @@
                 <div class="px-3 py-2 text-uppercase extra-small fw-bold text-muted border-bottom">Navigation</div>
                 <ul class="nav flex-column">
                     <li class="nav-item">
-                        <a class="nav-link px-3 py-3 text-dark fw-bold border-bottom d-flex align-items-center justify-content-between" href="#booking-section" data-bs-dismiss="offcanvas">
+                        <a class="nav-link px-3 py-3 text-dark fw-bold border-bottom d-flex align-items-center justify-content-between" href="#booking-section" data-bs-dismiss="offcanvas" onclick="focusBookingForm()">
                             <span><i class="fa-solid fa-taxi text-warning me-3"></i> Book Taxi</span>
                             <i class="fa-solid fa-chevron-right text-muted small"></i>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link px-3 py-3 text-dark fw-bold border-bottom d-flex align-items-center justify-content-between" href="#tariffs" data-bs-dismiss="offcanvas">
+                        <a class="nav-link px-3 py-3 text-dark fw-bold border-bottom d-flex align-items-center justify-content-between" href="javascript:void(0)" data-bs-dismiss="offcanvas" onclick="openMobileTariffModal()">
                             <span><i class="fa-solid fa-tags text-warning me-3"></i> Tariff & Rates</span>
-                            <i class="fa-solid fa-chevron-right text-muted small"></i>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link px-3 py-3 text-dark fw-bold border-bottom d-flex align-items-center justify-content-between" href="#why-us" data-bs-dismiss="offcanvas">
-                            <span><i class="fa-solid fa-shield-halved text-warning me-3"></i> Why Choose Us</span>
                             <i class="fa-solid fa-chevron-right text-muted small"></i>
                         </a>
                     </li>
@@ -684,8 +784,8 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link px-3 py-3 text-dark fw-bold border-bottom d-flex align-items-center justify-content-between" href="#contact" data-bs-dismiss="offcanvas">
-                            <span><i class="fa-solid fa-envelope text-warning me-3"></i> Contact</span>
+                        <a class="nav-link px-3 py-3 text-dark fw-bold border-bottom d-flex align-items-center justify-content-between" href="tel:<?= $settings['contact_phone'] ?? '+919876543210' ?>" data-bs-dismiss="offcanvas">
+                            <span><i class="fa-solid fa-phone text-warning me-3"></i> Helpline Contact</span>
                             <i class="fa-solid fa-chevron-right text-muted small"></i>
                         </a>
                     </li>
@@ -708,8 +808,9 @@
     <!-- Hero & Instant Booking Engine Section -->
     <section class="hero-section" id="booking-section">
         <div class="container">
-            <div class="row align-items-center gy-5">
-                <div class="col-lg-6">
+            <div class="row align-items-center gy-4 gy-lg-5">
+                <!-- Hero Marketing Text (Desktop only) -->
+                <div class="col-lg-6 d-none d-lg-block">
                     <div class="hero-badge animate__animated animate__fadeInDown">
                         <i class="fa-solid fa-star me-1"></i> #1 Rated Outstation Drop Taxi Service
                     </div>
@@ -733,9 +834,9 @@
                     </div>
                 </div>
 
-                <!-- Interactive Booking Form Widget -->
-                <div class="col-lg-6">
-                    <div class="booking-card animate__animated animate__fadeInRight">
+                <!-- Interactive Booking Form Widget (Centered & Full-width on Mobile/Tab, Half-width on Desktop) -->
+                <div class="col-12 col-lg-6 mx-auto">
+                    <div class="booking-card animate__animated animate__fadeIn">
                         <h4 class="fw-bold mb-3 text-dark text-center"><i class="fa-solid fa-calculator text-warning me-2"></i>Instant Fare & Booking</h4>
 
                         <!-- Trip Type Toggle -->
@@ -973,8 +1074,8 @@
         </div>
     </section>
 
-    <!-- Tariff Pricing Cards Section -->
-    <section class="py-5 bg-white" id="tariffs">
+    <!-- Tariff Pricing Cards Section (Desktop only) -->
+    <section class="py-5 bg-white d-none d-lg-block" id="tariffs">
         <div class="container py-4">
             <div class="text-center mb-5">
                 <span class="badge bg-warning text-dark font-weight-bold text-uppercase px-3 py-2">Transparent Pricing</span>
@@ -1034,8 +1135,8 @@
         </div>
     </section>
 
-    <!-- Why Choose Us Section -->
-    <section class="py-5 bg-white" id="why-us">
+    <!-- Why Choose Us Section (Desktop only) -->
+    <section class="py-5 bg-white d-none d-lg-block" id="why-us">
         <div class="container py-4">
             <div class="row align-items-center gy-4">
                 <div class="col-lg-6">
@@ -1080,8 +1181,8 @@
         </div>
     </section>
 
-    <!-- Contact & Enquiry Section -->
-    <section class="py-5 bg-dark text-white" id="contact">
+    <!-- Contact & Enquiry Section (Desktop only) -->
+    <section class="py-5 bg-dark text-white d-none d-lg-block" id="contact">
         <div class="container py-4">
             <div class="row gy-4">
                 <div class="col-lg-5">
@@ -1151,9 +1252,9 @@
         </div>
     </section>
 
-    <!-- Latest SEO Blogs & Travel Guides Section -->
+    <!-- Latest SEO Blogs & Travel Guides Section (Desktop only) -->
     <?php if (!empty($recent_blogs)): ?>
-    <section class="py-5 bg-white border-top border-bottom" id="blogs">
+    <section class="py-5 bg-white border-top border-bottom d-none d-lg-block" id="blogs">
         <div class="container py-4">
             <div class="d-flex flex-wrap justify-content-between align-items-end mb-4 gap-3">
                 <div>
@@ -1205,11 +1306,11 @@
     </section>
     <?php endif; ?>
 
-    <!-- Footer -->
-    <footer>
+    <!-- Footer (Desktop only) -->
+    <footer class="d-none d-lg-block">
         <div class="container">
             <div class="row gy-4 mb-5">
-                <div class="col-lg-4">
+                <div class="col-lg-5">
                     <div class="d-flex align-items-center gap-2 mb-3">
                         <div class="logo-badge"><i class="fa-solid fa-taxi"></i></div>
                         <span class="fs-4 fw-extrabold text-white">Drop<span class="text-warning">Taxi</span></span>
@@ -1217,7 +1318,7 @@
                     <p class="small text-muted">Tamil Nadu's premier one-way outstation taxi service. Reliable, punctual, and safe cab rides at the guaranteed lowest rates.</p>
                 </div>
                 
-                <div class="col-6 col-lg-2">
+                <div class="col-6 col-lg-3">
                     <h5>Quick Links</h5>
                     <ul class="list-unstyled small">
                         <li class="mb-2"><a href="#booking-section">Book Cab</a></li>
@@ -1229,7 +1330,7 @@
                     </ul>
                 </div>
 
-                <div class="col-6 col-lg-3">
+                <div class="col-6 col-lg-4">
                     <h5>Major Service Cities</h5>
                     <ul class="list-unstyled small">
                         <li class="mb-2">Chennai Drop Taxi</li>
@@ -1237,14 +1338,6 @@
                         <li class="mb-2">Madurai & Trichy Drop Cabs</li>
                         <li class="mb-2">Bangalore & Pondicherry Cabs</li>
                     </ul>
-                </div>
-
-                <div class="col-lg-3">
-                    <h5>Super Admin Portal</h5>
-                    <p class="small text-muted">Manage fleet bookings, driver allocations & settings.</p>
-                    <a href="<?= base_url('admin/login') ?>" class="btn btn-outline-warning btn-sm rounded-pill font-weight-bold px-3">
-                        <i class="fa-solid fa-lock me-1"></i> Admin Login
-                    </a>
                 </div>
             </div>
 
@@ -1256,6 +1349,65 @@
             </div>
         </div>
     </footer>
+
+    <!-- Mobile Tariff & Rates Modal / Sheet (For Mobile & Tablet Users) -->
+    <div class="modal fade" id="mobileTariffModal" tabindex="-1" aria-labelledby="mobileTariffModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header bg-dark text-white border-0 py-3">
+                    <h5 class="modal-title fw-bold" id="mobileTariffModalLabel"><i class="fa-solid fa-tags text-warning me-2"></i>Cab Tariff & Rates</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-3 bg-light">
+                    <p class="small text-muted mb-3 text-center">Transparent rates with zero hidden charges across Tamil Nadu, Bangalore & Kerala.</p>
+                    <div class="d-flex flex-column gap-3">
+                        <?php if(!empty($vehicles)): foreach($vehicles as $v): ?>
+                        <div class="card border-0 shadow-sm rounded-3 p-3 bg-white">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="rounded-circle bg-warning bg-opacity-10 text-warning d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+                                        <?php 
+                                            if($v['type_key']=='sedan') echo '<i class="fa-solid fa-car"></i>';
+                                            else if($v['type_key']=='suv') echo '<i class="fa-solid fa-truck-monster"></i>';
+                                            else if($v['type_key']=='innova') echo '<i class="fa-solid fa-van-shuttle"></i>';
+                                            else echo '<i class="fa-solid fa-bus"></i>';
+                                        ?>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold text-dark mb-0"><?= html_escape($v['name']) ?></h6>
+                                        <div class="extra-small text-muted"><?= $v['capacity'] ?> Seater AC Cab</div>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-warning text-dark font-weight-bold rounded-pill px-3" data-bs-dismiss="modal" onclick="selectVehicle('<?= $v['type_key'] ?>'); focusBookingForm();">
+                                    Select
+                                </button>
+                            </div>
+                            <div class="row g-2 text-center mt-1">
+                                <div class="col-6">
+                                    <div class="p-2 bg-light rounded-2 border">
+                                        <div class="extra-small text-muted fw-bold" style="font-size: 0.68rem;">ONE WAY</div>
+                                        <div class="fw-bold fs-6 text-dark">₹<?= number_format($v['per_km_oneway'], 0) ?><span class="extra-small text-muted">/km</span></div>
+                                        <div class="extra-small text-secondary" style="font-size: 0.7rem;">Min <?= $v['min_km_oneway'] ?> KM</div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="p-2 bg-success bg-opacity-10 rounded-2 border border-success border-opacity-25">
+                                        <div class="extra-small text-success fw-bold" style="font-size: 0.68rem;">ROUND TRIP</div>
+                                        <div class="fw-bold fs-6 text-success">₹<?= number_format($v['per_km_roundtrip'], 0) ?><span class="extra-small text-muted">/km</span></div>
+                                        <div class="extra-small text-secondary" style="font-size: 0.7rem;">Min <?= $v['min_km_roundtrip'] ?> KM</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <?php endforeach; endif; ?>
+                    </div>
+                </div>
+                <div class="modal-footer bg-white border-0 py-2 justify-content-center">
+                    <button type="button" class="btn btn-dark btn-sm rounded-pill px-4" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Customer Phone OTP Modal -->
     <div class="modal fade" id="customerAuthModal" tabindex="-1" aria-hidden="true">
@@ -1308,13 +1460,37 @@
         </div>
     </div>
 
-    <!-- Floating Sticky Action Buttons -->
-    <a href="tel:<?= $settings['contact_phone'] ?? '+919876543210' ?>" class="floating-action-btn float-call" title="Call Us Now">
+    <!-- Floating Sticky Action Buttons (Desktop only) -->
+    <a href="tel:<?= $settings['contact_phone'] ?? '+919876543210' ?>" class="floating-action-btn float-call d-none d-lg-flex" title="Call Us Now">
         <i class="fa-solid fa-phone"></i>
     </a>
-    <a href="https://wa.me/<?= $settings['whatsapp_number'] ?? '919876543210' ?>" target="_blank" class="floating-action-btn float-whatsapp" title="WhatsApp Us">
+    <a href="https://wa.me/<?= $settings['whatsapp_number'] ?? '919876543210' ?>" target="_blank" class="floating-action-btn float-whatsapp d-none d-lg-flex" title="WhatsApp Us">
         <i class="fa-brands fa-whatsapp"></i>
     </a>
+
+    <!-- Mobile & Tablet App Bottom Navigation Bar (Visible only on Mobile/Tablet screens < 992px) -->
+    <nav class="mobile-bottom-nav d-flex d-lg-none" aria-label="Mobile Bottom App Bar">
+        <a href="#booking-section" class="mobile-bottom-nav-item active" onclick="focusBookingForm(event)">
+            <i class="fa-solid fa-taxi"></i>
+            <span>Book Cab</span>
+        </a>
+        <button type="button" class="mobile-bottom-nav-item nav-tariff" onclick="openMobileTariffModal()">
+            <i class="fa-solid fa-tags"></i>
+            <span>Tariff Rates</span>
+        </button>
+        <a href="tel:<?= $settings['contact_phone'] ?? '+919876543210' ?>" class="mobile-bottom-nav-item nav-call">
+            <i class="fa-solid fa-phone"></i>
+            <span>Call 24/7</span>
+        </a>
+        <a href="https://wa.me/<?= $settings['whatsapp_number'] ?? '919876543210' ?>" target="_blank" class="mobile-bottom-nav-item nav-whatsapp">
+            <i class="fa-brands fa-whatsapp"></i>
+            <span>WhatsApp</span>
+        </a>
+        <button type="button" class="mobile-bottom-nav-item" onclick="openCustomerAuthModal()">
+            <i class="fa-solid fa-user-circle"></i>
+            <span><?= $is_cust_logged ? 'Account' : 'Login / OTP' ?></span>
+        </button>
+    </nav>
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -2755,6 +2931,23 @@
         function escapeHtml(text) {
             if (!text) return '';
             return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        function focusBookingForm(e) {
+            if (e && e.preventDefault) e.preventDefault();
+            var el = document.getElementById('pickup_location');
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                setTimeout(function() { el.focus(); }, 300);
+            }
+        }
+
+        function openMobileTariffModal() {
+            var modalEl = document.getElementById('mobileTariffModal');
+            if (modalEl) {
+                var modal = new bootstrap.Modal(modalEl);
+                modal.show();
+            }
         }
 
         document.addEventListener('DOMContentLoaded', function() {
